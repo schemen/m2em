@@ -5,8 +5,13 @@ import sqlite3
 import texttable
 import requests
 from bs4 import BeautifulSoup
-from urlparse import urlparse
-import sourceparser.m2emMangastream as msparser
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+
+import bin.sourceparser.m2emMangastream as msparser
 
 '''
 
@@ -69,7 +74,7 @@ def printFeeds(database):
                           't',])  # text
     table.header (["ID", "URL"])
     table.add_rows(__tabledata,header=False)
-    print table.draw()
+    print(table.draw())
 
 
 

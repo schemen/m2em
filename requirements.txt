@@ -1,0 +1,6 @@
+validators
+texttable
+requests
+bs4
+urllib3
+feedparser

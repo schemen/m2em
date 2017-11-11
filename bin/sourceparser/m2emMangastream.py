@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 import logging
 import re
-from urlparse import urlparse
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+
 from bs4 import BeautifulSoup
 
 '''
