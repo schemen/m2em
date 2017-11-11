@@ -4,7 +4,13 @@ import bin.m2emHelper as helper
 from bin.models.m2emManga import Manga
 
 
-def RssParser(database):
+def RssParser(config):
+
+
+    # Get database config
+    database = config["Database"]
+
+
     rssdata = helper.getFeeds(database)
 
     logging.info("Checking for new Feed Data...")
@@ -20,6 +26,5 @@ def RssParser(database):
             current_manga = Manga()
             current_manga.database = database
             current_manga.load_from_feed(entry, str(i[1]))
-            # current_manga.print()
-            logging.info(current_manga)
+            current_manga.print_manga()
             current_manga.save()

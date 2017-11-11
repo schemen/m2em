@@ -9,20 +9,23 @@ import bin.m2emHelper as helper
 import bin.m2emRssParser as mparser
 import bin.m2emDownloader as mdownloader
 
-logging.basicConfig(format='%(message)s', level=logging.INFO)
+#logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
 class M2em:
 
     def __init__(self):
+
+        # Get args right at the start
         self.args = None
         if not self.args:
             self.read_arguments()
 
+        # Load config right at the start
         self.config = None
         if not self.config:
             self.read_config()
 
-    # helpers
+
     def read_arguments(self):
 
         # Get user Input
@@ -51,9 +54,10 @@ class M2em:
         if self.args.debug:
             logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
 
+
+    #Read Config
     def read_config(self):
 
-        # Read Config
         logging.debug("Loading configuration")
         config_reader = configparser.ConfigParser()
         config_reader.read("config.ini")
@@ -67,6 +71,8 @@ class M2em:
         if self.config["Database"]:
             logging.debug("Succesfully loaded Database: %s ", self.config["Database"])
 
+
+
     def save_feed_to_db(self):
 
         '''
@@ -74,7 +80,7 @@ class M2em:
         '''
         logging.info("Entered URL: %s" % self.args.rss_feed)
         if validators.url(self.args.rss_feed):
-            helper.writeFeed(self.args.rss_feed, self.config["Database"])
+            helper.writeFeed(self.args.rss_feed, self.config)
         else:
             logging.error("You need to enter an URL!")
 
@@ -83,12 +89,14 @@ class M2em:
         '''    
         Catch --list-feeds
         '''
-        helper.printFeeds(self.config["Database"])
+        helper.printFeeds(self.config)
+
+
 
     # worker methods
     def parse_rss_feeds(self):
 
-        return mparser.RssParser(self.config["Database"])
+        return mparser.RssParser(self.config)
 
     def images_fetcher(self):
         # TODO Make code to fetch and sort images
@@ -99,7 +107,12 @@ class M2em:
         # TODO Convert images
         pass
 
+
+
+
+    # Application Run & Daemon loop
     def run(self):
+
         if self.args.rss_feed:
             self.save_feed_to_db()
             return
@@ -108,8 +121,8 @@ class M2em:
             self.list_feeds()
             return
 
+        # Mainloop
         loop = True
-
         while loop:
             if not self.args.daemon:
                 loop = False

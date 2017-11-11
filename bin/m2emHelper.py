@@ -27,7 +27,13 @@ import bin.sourceparser.m2emMangastream as msparser
 Function write a feed into the DB
 Returns: N/A
 '''
-def writeFeed(url,database):
+def writeFeed(url,config):
+
+
+    # Get database config
+    database = config["Database"]
+
+
     # Open Database
     try:
         conn = sqlite3.connect(database)
@@ -52,7 +58,13 @@ def writeFeed(url,database):
 Function that gets feed data and display it nicely
 Returns: N/A
 '''
-def printFeeds(database):
+def printFeeds(config):
+
+
+    # Get database config
+    database = config["Database"]
+
+
 
     # Open Database
     try:
