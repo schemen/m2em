@@ -40,15 +40,20 @@ class Manga:
         self.chapter_pubDate = entry.published
         self.parent_feed = parent_feed
 
+        # Set some defaul values
+        self.ispulled = 0
+        self.isconverted = 0
+        self.issent = 0
+
     def print_manga(self):
-        logging.info("Title:         {}".format(self.title))
-        logging.info("Manga:         {}".format(self.manga_name))
-        logging.info("Chapter:       {}".format(self.chapter))
-        logging.info("Chapter Name:  {}".format(self.chapter_name))
-        logging.info("Chapter Pages: {}".format(self.chapter_pages))
-        logging.info("Released on:   {}".format(self.chapter_pubDate))
-        logging.info("URL:           {}".format(self.chapter_link))
-        logging.info("Parent feed:   {}".format(self.parent_feed))
+        logging.debug("Title:         {}".format(self.title))
+        logging.debug("Manga:         {}".format(self.manga_name))
+        logging.debug("Chapter:       {}".format(self.chapter))
+        logging.debug("Chapter Name:  {}".format(self.chapter_name))
+        logging.debug("Chapter Pages: {}".format(self.chapter_pages))
+        logging.debug("Released on:   {}".format(self.chapter_pubDate))
+        logging.debug("URL:           {}".format(self.chapter_link))
+        logging.debug("Parent feed:   {}".format(self.parent_feed))
 
 
     def save(self):
@@ -64,7 +69,7 @@ class Manga:
             return False
         logging.debug("Succesfully Connected to DB %s" % self.database)
         c = conn.cursor()
-        logging.info("Checking if chapter is already saved...")
+        logging.debug("Checking if chapter is already saved...")
 
         # Check if Feed is already saved in DB
         c.execute("SELECT url FROM chapter WHERE url = ?", (str(self.chapter_link),))
@@ -73,9 +78,9 @@ class Manga:
 
         logging.debug("Duplicated Data: %s" % duplicated)
         if len(duplicated) != 0:
-            logging.info("Manga is already in Database! Skipping...")
+            logging.debug("Manga is already in Database! Skipping...")
         else:
-            logging.info("Saving Chapter Data...")
+            logging.info("Saving Chapter Data for %s" % self.title)
             c.execute("insert into chapter (origin, title, date, url, desc, ispulled, isconverted, issent, pages, chapter, manganame) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                       (self.parent_feed,
                       self.title,
@@ -92,4 +97,4 @@ class Manga:
             logging.info("Succesfully saved Data!")
 
         conn.close()
-        logging.info("\n")
+        logging.debug("\n")

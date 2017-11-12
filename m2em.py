@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import logging
-import validators
+import time
 import argparse
 import configparser
-import time
+import validators
 # Start of the fun!
 import bin.m2emHelper as helper
 import bin.m2emRssParser as mparser
@@ -41,18 +41,15 @@ class M2em:
                                 action="store_true")
         parser.add_argument("--daemon", help="Run as daemon",
                                 action="store_true")
-
-        parser.add_argument("-v", "--verbose", help="Increase output verbosity",
-                                action="store_true")
         parser.add_argument("-d", "--debug", help="Debug Mode",
                                 action="store_true")
         self.args = parser.parse_args()
 
-        # Logging TODO, fix levels
-        if self.args.verbose:
-            logging.basicConfig(format='%(message)s', level=logging.INFO)
+        # Logging
         if self.args.debug:
             logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+        else:
+            logging.basicConfig(format='%(message)s', level=logging.INFO)
 
 
     #Read Config
@@ -70,47 +67,50 @@ class M2em:
             logging.debug("Succesfully loaded EbookFormat: %s ", self.config["EbookFormat"])
         if self.config["Database"]:
             logging.debug("Succesfully loaded Database: %s ", self.config["Database"])
+        if self.config["Sleep"]:
+            logging.debug("Succesfully loaded Database: %s ", self.config["Sleep"])
 
 
-
+    '''
+    Catch -r/--add-rss
+    '''
     def save_feed_to_db(self):
-
-        '''
-        Catch -r/--add-rss
-        '''
         logging.info("Entered URL: %s" % self.args.rss_feed)
         if validators.url(self.args.rss_feed):
             helper.writeFeed(self.args.rss_feed, self.config)
         else:
             logging.error("You need to enter an URL!")
 
-    def list_feeds(self):
 
-        '''    
-        Catch --list-feeds
-        '''
+    '''    
+    Catch --list-feeds
+    '''
+    def list_feeds(self):
         helper.printFeeds(self.config)
 
 
 
-    # worker methods
+    '''
+    This are the worker one round
+    '''
+    #  Worker to get and parse  rss feeds
     def parse_rss_feeds(self):
+        mparser.RssParser(self.config)
 
-        return mparser.RssParser(self.config)
-
+    # Worker to fetch all images
     def images_fetcher(self):
-        # TODO Make code to fetch and sort images
-        mdownloader(self.config)
-        pass
+        mdownloader.ChapterDownloader(self.config)
 
+    # Worker to convert all downloaded chapters into ebooks
     def image_converter(self):
         # TODO Convert images
         pass
 
 
 
-
-    # Application Run & Daemon loop
+    '''
+    Application Run & Daemon loop
+    '''
     def run(self):
 
         if self.args.rss_feed:
@@ -127,9 +127,13 @@ class M2em:
             if not self.args.daemon:
                 loop = False
 
-            parsed_feeds = self.parse_rss_feeds()
-            if parsed_feeds:
-                self.images_fetcher(parsed_feeds)
+            logging.info("Starting RSS Data Fetcher!")
+            #self.parse_rss_feeds()
+            logging.info("Finished Loading RSS Data")
+
+            logging.info("Starting all outstanding Chapter Downloads!")
+            self.images_fetcher()
+            logging.info("Finished all outstanding Chapter Downloads")
 
             self.image_converter()
 

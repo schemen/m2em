@@ -93,7 +93,7 @@ def printFeeds(config):
 
 
 '''
-Function that gets feed data and display it nicely
+Function that gets feed data returns it
 Returns: tabledata
 '''
 def getFeeds(database):
@@ -113,6 +113,33 @@ def getFeeds(database):
     __tabledata = __data.fetchall()
 
     return __tabledata
+
+
+
+
+'''
+Function that gets chapters and returns it
+Returns: tabledata
+'''
+def getChapters(database):
+
+    # Open Database
+    try:
+        conn = sqlite3.connect(database)
+    except Exception as e:
+        print("Could not connect to DB %s" % e)
+
+    c = conn.cursor()
+    logging.debug("Succesfully Connected to DB %s" % database)
+
+
+    # Get Data
+    __data = c.execute("SELECT * FROM chapter")
+    __chapterdata = __data.fetchall()
+
+    return __chapterdata
+
+
 
 
 
@@ -145,7 +172,7 @@ def getMangaData(url):
     # Mangastream Parser
     if origin == "mangastream.com":
   
-        logging.info("Getting Mangadata from Mangastream.com for %s" % url)
+        logging.debug("Getting Mangadata from Mangastream.com for %s" % url)
       
         # Load page once to hand it over to parser function
         logging.debug("Loading Page to gather data...")
@@ -175,9 +202,9 @@ def getMangaData(url):
 '''
 Function to create folders
 '''
-def createFolder(self):
-    if not os.path.exists(self.path):
-        os.makedirs(self.path)
-        logging.debug("Folder Created!")
+def createFolder(folder):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+        logging.debug("Folder %s Created!" % folder)
     else:
-        logging.debug("Folder Exists!")
+        logging.debug("Folder %s Exists!" % folder)
