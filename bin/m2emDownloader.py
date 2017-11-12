@@ -1,5 +1,4 @@
 import ssl
-from bs4 import BeautifulSoup
 import requests
 import os
 import logging
@@ -18,16 +17,13 @@ def ChapterDownloader(config):
     logging.debug("Loaded Chapers:")
     for i in chapters:
         logging.debug(i)
-    pass
 
 
     # Start Download loop!
     for chapter in chapters:
 
         # get relevant data of this Manga
-        mangaid         = chapter[0]
         mangastarturl   = chapter[4]
-        ispulled        = chapter[6]
         mangapages      = chapter[9]
         mangatitle      = chapter[2]
         downloadfolder  = str(saveloc + mangatitle + "/images")
