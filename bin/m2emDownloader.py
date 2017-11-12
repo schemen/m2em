@@ -72,7 +72,7 @@ def ChapterDownloader(config):
                 counter = 0
                 for image in imageurls:
                     counter = counter + 1
-                    f = open(downloadfolder + "/" + str(counter) + ".png", 'wb')
+                    f = open(downloadfolder + "/" + str("{0:0=3d}".format(counter)) + ".png", 'wb')
                     f.write(requests.get(image).content)
                     f.close
 
