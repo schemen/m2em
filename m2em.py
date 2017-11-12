@@ -1,75 +1,147 @@
 #!/usr/bin/env python
 import logging
-import validators
+import time
 import argparse
 import configparser
+import validators
 # Start of the fun!
 import bin.m2emHelper as helper
 import bin.m2emRssParser as mparser
+import bin.m2emDownloader as mdownloader
 
-def main():
+#logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
-    # Get user Input
-    parser = argparse.ArgumentParser(description='Manga to eManga - m2em')
-    parser.add_argument("-r", "--rss-feed", help="Add RSS Feed of Manga. Only Mangastream & MangaFox are supported")
-    parser.add_argument("-u", "--add-user", help="Adds new user",
-                            action="store_true")
-    parser.add_argument("-l", "--list-chapters", help="Lists the last 10 Chapters",
-                            action="store_true")
-    parser.add_argument("-L", "--list-chapters-all", help="Lists all Chapters",
-                            action="store_true")
-    parser.add_argument("--list-feeds", help="Lists all feeds",
-                            action="store_true")
+class M2em:
 
-    parser.add_argument("-v", "--verbose", help="Increase output verbosity",
-                            action="store_true")
-    parser.add_argument("-d", "--debug", help="Debug Mode",
-                            action="store_true")
-    args = parser.parse_args()
+    def __init__(self):
+
+        # Get args right at the start
+        self.args = None
+        if not self.args:
+            self.read_arguments()
+
+        # Load config right at the start
+        self.config = None
+        if not self.config:
+            self.read_config()
 
 
-    # Logging
-    if args.verbose:
-        logging.basicConfig(format='%(message)s', level=logging.INFO)
-    if args.debug:
-        logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+    def read_arguments(self):
 
-    # Read Config
-    logging.debug("Loading configuration")
-    config = configparser.ConfigParser()
-    config.read("config.ini")
-    configdata = config["CONFIG"]
+        # Get user Input
+        parser = argparse.ArgumentParser(description='Manga to eManga - m2em')
+        parser.add_argument("-r", "--rss-feed", help="Add RSS Feed of Manga. Only Mangastream & MangaFox are supported")
+        parser.add_argument("-u", "--add-user", help="Adds new user",
+                                action="store_true")
+        parser.add_argument("-l", "--list-chapters", help="Lists the last 10 Chapters",
+                                action="store_true")
+        parser.add_argument("-L", "--list-chapters-all", help="Lists all Chapters",
+                                action="store_true")
+        parser.add_argument("--list-feeds", help="Lists all feeds",
+                                action="store_true")
+        parser.add_argument("--daemon", help="Run as daemon",
+                                action="store_true")
+        parser.add_argument("-d", "--debug", help="Debug Mode",
+                                action="store_true")
+        self.args = parser.parse_args()
 
-    # Load Config Variables
-    savelocation = configdata["SaveLocation"]
-    ebookformat  = configdata["EbookFormat"]
-    database     = configdata["Database"]
+        # Logging
+        if self.args.debug:
+            logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+        else:
+            logging.basicConfig(format='%(message)s', level=logging.INFO)
 
-    if savelocation:
-        logging.debug("Succesfully loaded SaveLocation: %s ", savelocation)
-    if ebookformat:
-        logging.debug("Succesfully loaded EbookFormat: %s ", ebookformat)
-    if database:
-        logging.debug("Succesfully loaded Database: %s ", database)
 
-    '''    
+    #Read Config
+    def read_config(self):
+
+        logging.debug("Loading configuration")
+        config_reader = configparser.ConfigParser()
+        config_reader.read("config.ini")
+        self.config = config_reader["CONFIG"]
+
+        # Load Config Variables
+        if self.config["SaveLocation"]:
+            logging.debug("Succesfully loaded SaveLocation: %s ", self.config["SaveLocation"])
+        if self.config["EbookFormat"]:
+            logging.debug("Succesfully loaded EbookFormat: %s ", self.config["EbookFormat"])
+        if self.config["Database"]:
+            logging.debug("Succesfully loaded Database: %s ", self.config["Database"])
+        if self.config["Sleep"]:
+            logging.debug("Succesfully loaded Database: %s ", self.config["Sleep"])
+
+
+    '''
     Catch -r/--add-rss
     '''
-    if args.rss_feed:
-        logging.info("Entered URL: %s" % args.rss_feed)
-        if validators.url(args.rss_feed):
-            helper.writeFeed(args.rss_feed,database)
+    def save_feed_to_db(self):
+        logging.info("Entered URL: %s" % self.args.rss_feed)
+        if validators.url(self.args.rss_feed):
+            helper.writeFeed(self.args.rss_feed, self.config)
         else:
-            print("You need to enter an URL!")
+            logging.error("You need to enter an URL!")
 
 
     '''    
     Catch --list-feeds
     '''
-    if args.list_feeds:
-        # helper.printFeeds(database)
-        mparser.RssParser(helper.getFeeds(database))
+    def list_feeds(self):
+        helper.printFeeds(self.config)
+
+
+
+    '''
+    This are the worker one round
+    '''
+    #  Worker to get and parse  rss feeds
+    def parse_rss_feeds(self):
+        mparser.RssParser(self.config)
+
+    # Worker to fetch all images
+    def images_fetcher(self):
+        mdownloader.ChapterDownloader(self.config)
+
+    # Worker to convert all downloaded chapters into ebooks
+    def image_converter(self):
+        # TODO Convert images
+        pass
+
+
+
+    '''
+    Application Run & Daemon loop
+    '''
+    def run(self):
+
+        if self.args.rss_feed:
+            self.save_feed_to_db()
+            return
+
+        if self.args.list_feeds:
+            self.list_feeds()
+            return
+
+        # Mainloop
+        loop = True
+        while loop:
+            if not self.args.daemon:
+                loop = False
+
+            logging.info("Starting RSS Data Fetcher!")
+            #self.parse_rss_feeds()
+            logging.info("Finished Loading RSS Data")
+
+            logging.info("Starting all outstanding Chapter Downloads!")
+            self.images_fetcher()
+            logging.info("Finished all outstanding Chapter Downloads")
+
+            self.image_converter()
+
+            if loop:
+                logging.info("Sleeping for %s seconds" % (self.config["Sleep"]))
+                time.sleep(int(self.config["Sleep"]))
 
 # Execute Main
 if __name__ == '__main__':
-    main()
+    me = M2em()
+    me.run()

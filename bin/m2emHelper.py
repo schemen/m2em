@@ -5,8 +5,13 @@ import sqlite3
 import texttable
 import requests
 from bs4 import BeautifulSoup
-from urlparse import urlparse
-import sourceparser.m2emMangastream as msparser
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+
+import bin.sourceparser.m2emMangastream as msparser
 
 '''
 
@@ -22,7 +27,13 @@ import sourceparser.m2emMangastream as msparser
 Function write a feed into the DB
 Returns: N/A
 '''
-def writeFeed(url,database):
+def writeFeed(url,config):
+
+
+    # Get database config
+    database = config["Database"]
+
+
     # Open Database
     try:
         conn = sqlite3.connect(database)
@@ -47,7 +58,13 @@ def writeFeed(url,database):
 Function that gets feed data and display it nicely
 Returns: N/A
 '''
-def printFeeds(database):
+def printFeeds(config):
+
+
+    # Get database config
+    database = config["Database"]
+
+
 
     # Open Database
     try:
@@ -69,14 +86,14 @@ def printFeeds(database):
                           't',])  # text
     table.header (["ID", "URL"])
     table.add_rows(__tabledata,header=False)
-    print table.draw()
+    print(table.draw())
 
 
 
 
 
 '''
-Function that gets feed data and display it nicely
+Function that gets feed data returns it
 Returns: tabledata
 '''
 def getFeeds(database):
@@ -96,6 +113,33 @@ def getFeeds(database):
     __tabledata = __data.fetchall()
 
     return __tabledata
+
+
+
+
+'''
+Function that gets chapters and returns it
+Returns: tabledata
+'''
+def getChapters(database):
+
+    # Open Database
+    try:
+        conn = sqlite3.connect(database)
+    except Exception as e:
+        print("Could not connect to DB %s" % e)
+
+    c = conn.cursor()
+    logging.debug("Succesfully Connected to DB %s" % database)
+
+
+    # Get Data
+    __data = c.execute("SELECT * FROM chapter")
+    __chapterdata = __data.fetchall()
+
+    return __chapterdata
+
+
 
 
 
@@ -128,7 +172,7 @@ def getMangaData(url):
     # Mangastream Parser
     if origin == "mangastream.com":
   
-        logging.info("Getting Mangadata from Mangastream.com for %s" % url)
+        logging.debug("Getting Mangadata from Mangastream.com for %s" % url)
       
         # Load page once to hand it over to parser function
         logging.debug("Loading Page to gather data...")
@@ -158,9 +202,9 @@ def getMangaData(url):
 '''
 Function to create folders
 '''
-def createFolder(self):
-    if not os.path.exists(self.path):
-        os.makedirs(self.path)
-        logging.debug("Folder Created!")
+def createFolder(folder):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+        logging.debug("Folder %s Created!" % folder)
     else:
-        logging.debug("Folder Exists!")
+        logging.debug("Folder %s Exists!" % folder)
