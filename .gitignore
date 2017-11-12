@@ -2,3 +2,4 @@
 .vscode
 test\ Kopie.db
 __pycache__
+comic/*
