@@ -4,7 +4,6 @@ import requests
 import os
 import logging
 import bin.m2emHelper as helper
-from bin.models.m2emManga import Manga
 import bin.sourceparser.m2emMangastream as msparser
 
 
