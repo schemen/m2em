@@ -4,6 +4,7 @@ import time
 import argparse
 import configparser
 import validators
+import datetime
 # Start of the fun!
 import bin.m2emHelper as helper
 import bin.m2emRssParser as mparser
@@ -131,6 +132,8 @@ class M2em:
         while loop:
             if not self.args.daemon:
                 loop = False
+
+            logging.info("Starting Loop at %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
             logging.info("Starting RSS Data Fetcher!")
             self.parse_rss_feeds()
