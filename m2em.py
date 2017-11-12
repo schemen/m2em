@@ -9,6 +9,7 @@ import bin.m2emHelper as helper
 import bin.m2emRssParser as mparser
 import bin.m2emDownloader as mdownloader
 import bin.m2emConverter as mconverter
+import bin.m2emSender as msender
 
 #logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
@@ -104,9 +105,11 @@ class M2em:
 
     # Worker to convert all downloaded chapters into ebooks
     def image_converter(self):
-        # TODO Convert images
         mconverter.RecursiveConverter(self.config)
-        pass
+
+    # Worker to convert all downloaded chapters into ebooks
+    def send_ebooks(self):
+        msender.sendEbook(self.config)
 
 
 
@@ -130,16 +133,20 @@ class M2em:
                 loop = False
 
             logging.info("Starting RSS Data Fetcher!")
-            #self.parse_rss_feeds()
+            self.parse_rss_feeds()
             logging.info("Finished Loading RSS Data")
 
             logging.info("Starting all outstanding Chapter Downloads!")
-            #self.images_fetcher()
+            self.images_fetcher()
             logging.info("Finished all outstanding Chapter Downloads")
 
             logging.info("Starting recursive image conversion!")
             self.image_converter()
             logging.info("Finished recursive image conversion!")
+
+            logging.info("Starting to send all ebooks!")
+            self.send_ebooks()
+            logging.info("Finished sending ebooks!")
 
             if loop:
                 logging.info("Sleeping for %s seconds" % (self.config["Sleep"]))

@@ -23,6 +23,36 @@ import bin.sourceparser.m2emMangastream as msparser
 
 
 
+
+
+'''
+Function set manga as sent
+Returns: N/A
+'''
+def setIsSent(mangaid, database):
+    # Open Database
+    try:
+        conn = sqlite3.connect(database)
+    except Exception as e:
+        print("Could not connect to DB %s" % e)
+
+    c = conn.cursor()
+    logging.debug("Succesfully Connected to DB %s" % database)
+
+    # Insert Data
+    try:
+        c.execute("update chapter set issent=1 where chapterid=(?)", (mangaid,))
+        conn.commit()
+        logging.debug("Set chapter with ID %s as sent" % mangaid)
+    except Exception as e:
+        logging.debug("Failed to save feed into database: %s" % e)
+    conn.close
+
+
+
+
+
+
 '''
 Function write a feed into the DB
 Returns: N/A
@@ -140,6 +170,32 @@ def getChapters(database):
     return __chapterdata
 
 
+
+
+
+
+
+'''
+Function that gets chapters and returns it
+Returns: __userdata
+'''
+def getUsers(database):
+
+    # Open Database
+    try:
+        conn = sqlite3.connect(database)
+    except Exception as e:
+        print("Could not connect to DB %s" % e)
+
+    c = conn.cursor()
+    logging.debug("Succesfully Connected to DB %s" % database)
+
+
+    # Get Data
+    __data = c.execute("SELECT * FROM user")
+    __userdata = __data.fetchall()
+
+    return __userdata
 
 
 
