@@ -92,9 +92,26 @@ class M2em:
         helper.printFeeds(self.config)
 
 
+    '''    
+    Catch -L/--list-chapters-all
+    '''
+    def list_all_chapters(self):
+        helper.printChaptersAll(self.config)
+        pass
+
+
+    '''    
+    Catch -l/--list-chapters
+    '''
+    def list_chapters(self):
+        helper.printChapters(self.config)
+        pass
+
+
+
 
     '''
-    This are the worker one round
+    This are the worker, one round
     '''
     #  Worker to get and parse  rss feeds
     def parse_rss_feeds(self):
@@ -125,6 +142,14 @@ class M2em:
 
         if self.args.list_feeds:
             self.list_feeds()
+            return
+
+        if self.args.list_chapters_all:
+            self.list_all_chapters()
+            return
+
+        if self.args.list_chapters:
+            self.list_chapters()
             return
 
         # Mainloop
