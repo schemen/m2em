@@ -7,7 +7,13 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.utils import COMMASPACE, formatdate
+from email.generator import Generator
 from email import encoders
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 def sendEbook(config):
     # Load configs required here
@@ -52,6 +58,7 @@ def sendEbook(config):
                 if shouldsend == "True":
                     
                     logging.debug("Compiling Email for %s" % user[1])
+
                     # Compile Email
                     msg = MIMEMultipart()
                     msg['Subject'] = 'Ebook Delivery of %s' % mangatitle
@@ -59,25 +66,40 @@ def sendEbook(config):
                     msg['From'] = emailadress
                     msg['To'] = kindle_mail
 
-                    msg.attach(MIMEText("Ebook delivery!"))
+                    text = "Automatic Ebook delivery by m2em."
+                    msg.attach(MIMEText(text))
 
 
-                    part = MIMEBase('application', "octet-stream")
-                    part.set_payload( open(eblocation,"rb").read() )
-                    encoders.encode_base64(part)
-                    part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(os.path.basename(eblocation)))
-                    msg.attach(part)
+                    # Add Ebook as attachment
+                    ebfile = open(eblocation, 'rb')
 
-                    # Connect to Email Server
+                    attachment = MIMEBase('application', 'octet-stream', name=os.path.basename(eblocation))
+                    attachment.set_payload(ebfile.read())
+                    ebfile.close()
+                    encoders.encode_base64(attachment)
+                    attachment.add_header('Content-Disposition', 'attachment',
+                                  filename=os.path.basename(eblocation))
+                    
+                    msg.attach(attachment)
+
+                    # Convert message to string
+                    sio = StringIO()
+                    gen = Generator(sio, mangle_from_=False)
+                    gen.flatten(msg)
+                    msg = sio.getvalue()
+
+                    # Send Email Off!
                     try:
                         server = smtplib.SMTP(smtpserver,serverport)
                         if starttls:
                             server.starttls()
+                        server.ehlo()
                         server.login(emailadress,password)
-                        server.sendmail(emailadress, kindle_mail, msg.as_string())
-                        server.quit()
+                        #server.sendmail(emailadress, kindle_mail, msg.as_string())
+                        server.sendmail(emailadress, kindle_mail, msg)
+                        server.close()
                         logging.debug("Sent email to %s "% kindle_mail)
-                    except Exception as e:
+                    except smtplib.SMTPException as e:
                         logging.debug("Could not send email! %s" % e)
 
                 
