@@ -81,9 +81,9 @@ def sendEbook(config):
                         logging.debug("Could not send email! %s" % e)
 
                 
-                # Set Email as Sent
-                helper.setIsSent(mangaid,database)
-                logging.info("Sent %s to all requested users."% mangatitle)
+            # Set Email as Sent
+            helper.setIsSent(mangaid,database)
+            logging.info("Sent %s to all requested users."% mangatitle)
 
 
 
