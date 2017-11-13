@@ -212,7 +212,7 @@ class M2em:
             logging.info("Finished recursive image conversion!")
 
             logging.info("Starting to send all ebooks!")
-            #self.send_ebooks()
+            self.send_ebooks()
             logging.info("Finished sending ebooks!")
 
             if loop:
