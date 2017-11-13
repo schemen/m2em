@@ -69,12 +69,16 @@ def sendEbook(config):
                     msg.attach(part)
 
                     # Connect to Email Server
-                    server = smtplib.SMTP(smtpserver,serverport)
-                    if starttls:
-                        server.starttls()
-                    server.login(emailadress,password)
-                    server.sendmail(emailadress, kindle_mail, msg.as_string())
-                    server.quit()
+                    try:
+                        server = smtplib.SMTP(smtpserver,serverport)
+                        if starttls:
+                            server.starttls()
+                        server.login(emailadress,password)
+                        server.sendmail(emailadress, kindle_mail, msg.as_string())
+                        server.quit()
+                    except Exception as e:
+                        logging.debug("Could not send email! %s" % e)
+
 
                     logging.debug("Sent email to %s "% kindle_mail)
                 
