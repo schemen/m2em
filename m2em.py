@@ -152,7 +152,7 @@ class M2em:
             logging.info("Finished sending ebooks!")
 
             if loop:
-                logging.info("Sleeping for %s seconds" % (self.config["Sleep"]))
+                logging.info("Sleeping for %s seconds\n" % (self.config["Sleep"]))
                 time.sleep(int(self.config["Sleep"]))
 
 # Execute Main
