@@ -76,15 +76,14 @@ def sendEbook(config):
                         server.login(emailadress,password)
                         server.sendmail(emailadress, kindle_mail, msg.as_string())
                         server.quit()
+                        logging.debug("Sent email to %s "% kindle_mail)
                     except Exception as e:
                         logging.debug("Could not send email! %s" % e)
 
-
-                    logging.debug("Sent email to %s "% kindle_mail)
                 
                 # Set Email as Sent
                 helper.setIsSent(mangaid,database)
-                logging.info("Sent %s..."% mangatitle)
+                logging.info("Sent %s to all requested users."% mangatitle)
 
 
 
