@@ -14,12 +14,12 @@ received messages to your Kindle email.
 
 
 ## Create and install virtual environment
-code(
+```x-sh
 virtualenv venv
 source venv/bin/activate
 pip install -r requirements.txt
 deactivate
-)
+```
 
 ## dependencies
 * validators
