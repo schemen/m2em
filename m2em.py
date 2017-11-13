@@ -42,6 +42,9 @@ class M2em:
                                 action="store_true")
         parser.add_argument("--list-feeds", help="Lists all feeds",
                                 action="store_true")
+        parser.add_argument("--list-users", help="Lists all Users",
+                                action="store_true")
+        parser.add_argument("-s", "--switch-send", help="Pass ID of User. Switches said user Send eBook status")
         parser.add_argument("--daemon", help="Run as daemon",
                                 action="store_true")
         parser.add_argument("-d", "--debug", help="Debug Mode",
@@ -85,6 +88,14 @@ class M2em:
             logging.error("You need to enter an URL!")
 
 
+    '''
+    Catch -s/--switch-user
+    '''
+    def switch_user_status(self):
+        logging.debug("Entered USERID: %s" % self.args.switch_send)
+        helper.switchUserSend(self.args.switch_send, self.config)
+
+
     '''    
     Catch --list-feeds
     '''
@@ -108,6 +119,21 @@ class M2em:
         pass
 
 
+    '''    
+    Catch --list-users
+    '''
+    def list_users(self):
+        helper.printUsers(self.config)
+        pass
+
+
+
+    '''    
+    Catch -u/--add-user
+    '''
+    def add_user(self):
+        helper.createUser(self.config)
+        pass
 
 
     '''
@@ -140,6 +166,10 @@ class M2em:
             self.save_feed_to_db()
             return
 
+        if self.args.switch_send:
+            self.switch_user_status()
+            return
+
         if self.args.list_feeds:
             self.list_feeds()
             return
@@ -151,6 +181,15 @@ class M2em:
         if self.args.list_chapters:
             self.list_chapters()
             return
+
+        if self.args.add_user:
+            self.add_user()
+            return
+
+        if self.args.list_users:
+            self.list_users()
+            return
+
 
         # Mainloop
         loop = True
@@ -173,11 +212,11 @@ class M2em:
             logging.info("Finished recursive image conversion!")
 
             logging.info("Starting to send all ebooks!")
-            self.send_ebooks()
+            #self.send_ebooks()
             logging.info("Finished sending ebooks!")
 
             if loop:
-                logging.info("Sleeping for %s seconds\n" % (self.config["Sleep"]))
+                logging.info("Sleeping for %s seconds...\n" % (self.config["Sleep"]))
                 time.sleep(int(self.config["Sleep"]))
 
 # Execute Main
