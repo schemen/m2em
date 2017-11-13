@@ -26,7 +26,15 @@ def ChapterDownloader(config):
         mangastarturl   = chapter[4]
         mangapages      = chapter[9]
         mangatitle      = chapter[2]
+
+        # check if mangatitle contains ":" characters that OS can't handle as folders
+        if ":" in mangatitle:
+            mangatitle = mangatitle.replace(":", "_")
+
         downloadfolder  = str(saveloc + mangatitle + "/images")
+
+
+
 
         if os.path.isdir(downloadfolder):
             logging.debug("Manga %s downloaded already!" % mangatitle)

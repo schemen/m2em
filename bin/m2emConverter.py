@@ -21,9 +21,15 @@ def RecursiveConverter(config):
 
         # get relevant data of this Manga
         mangatitle   = chapter[2]
+
+        # check if mangatitle contains ":" characters that OS can't handle as folders
+        if ":" in mangatitle:
+            mangatitle = mangatitle.replace(":", "_")
+
         imagefolder  = str(saveloc + mangatitle + "/images/")
         eblocation   = str(saveloc + mangatitle + "/" + mangatitle + "." + ebformat.lower())
         cbzlocation  = str(saveloc + mangatitle + "/" + mangatitle + ".cbz")
+
 
         # Create CBZ to make creation easier
         if os.path.exists(cbzlocation):
