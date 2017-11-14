@@ -18,6 +18,11 @@ class M2em:
 
     def __init__(self):
 
+        # Python 3 is required!
+        if sys.version_info[0] < 3:
+            sys.stdout.write("Sorry, requires Python 3.x, not Python 2.x\n")
+            sys.exit(1)
+
         # Get args right at the start
         self.args = None
         if not self.args:
