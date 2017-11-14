@@ -6,7 +6,7 @@ from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
-from email.utils import COMMASPACE, formatdate
+from email.utils import COMMASPACE, formatdate, make_msgid
 from email.generator import Generator
 from email import encoders
 
@@ -25,6 +25,10 @@ def sendEbook(config):
     emailadress = config["EmailAdress"]
     password    = config["EmailAdressPw"]
     starttls    = config["ServerStartSSL"]
+
+    # Debug Server Data
+    logging.debug("Server: %s" % smtpserver)
+    logging.debug("Port: %s" % serverport)
 
     # Load Data from Database
     chapters = helper.getChapters(database)
@@ -65,6 +69,7 @@ def sendEbook(config):
                     msg['Date'] = formatdate(localtime=True)
                     msg['From'] = emailadress
                     msg['To'] = kindle_mail
+                    msg['Message-ID'] = make_msgid()
 
                     text = "Automatic Ebook delivery by m2em."
                     msg.attach(MIMEText(text))
@@ -90,7 +95,7 @@ def sendEbook(config):
 
                     # Send Email Off!
                     try:
-                        server = smtplib.SMTP(smtpserver,serverport)
+                        server = smtplib.SMTP(smtpserver,serverport,)
                         if starttls:
                             server.starttls()
                         server.ehlo()
