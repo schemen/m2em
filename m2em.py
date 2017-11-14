@@ -4,7 +4,6 @@ import time
 import argparse
 import configparser
 import datetime
-import argcomplete
 import validators
 # Start of the fun!
 import bin.m2emHelper as helper
@@ -51,7 +50,6 @@ class M2em:
                                 action="store_true")
         parser.add_argument("-d", "--debug", help="Debug Mode",
                                 action="store_true")
-        argcomplete.autocomplete(parser)
         self.args = parser.parse_args()
 
         # Logging
