@@ -33,3 +33,5 @@ deactivate
 
 ## Optional dependencies
 * KindleGen v2.9+ in a directory reachable by your PATH or in KCC directory (For MOBI generation). For Windows, place the .exe in the same directory
+
+Get Kindlegen here: https://www.amazon.com/gp/feature.html?docId=1000765211
