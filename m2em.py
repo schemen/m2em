@@ -46,6 +46,9 @@ class M2em:
                                 action="store_true")
         parser.add_argument("-s", "--switch-send", help="Pass ID of User. Switches said user Send eBook status")
         parser.add_argument("-S", "--switch-chapter", help="Pass ID of Chapter. Switches said Chapter Sent status")
+        parser.add_argument("-dc", "--delete-chapter", help="Pass ID of Chapter. Deletes said Chapter")
+        parser.add_argument("-du", "--delete-user", help="Pass ID of User. Deletes said User")
+        parser.add_argument("-df", "--delete-feed", help="Pass ID of Feed. Deletes said Feed")
         parser.add_argument("--daemon", help="Run as daemon",
                                 action="store_true")
         parser.add_argument("-d", "--debug", help="Debug Mode",
@@ -82,7 +85,7 @@ class M2em:
     Catch -r/--add-rss
     '''
     def save_feed_to_db(self):
-        logging.info("Entered URL: %s" % self.args.rss_feed)
+        logging.debug("Entered URL: %s" % self.args.rss_feed)
         if validators.url(self.args.rss_feed):
             helper.writeFeed(self.args.rss_feed, self.config)
         else:
@@ -105,6 +108,21 @@ class M2em:
         logging.debug("Entered CHAPTERID: %s" % self.args.switch_chapter)
         helper.switchChapterSend(self.args.switch_chapter, self.config)
 
+
+    '''
+    Delete Stuff functions
+    '''
+    def delete_user(self):
+        logging.debug("Entered USERID: %s" % self.args.delete_user)
+        helper.deleteUser(self.args.delete_user, self.config)
+
+    def delete_chapter(self):
+        logging.debug("Entered USERID: %s" % self.args.delete_chapter)
+        helper.deleteChapter(self.args.delete_chapter, self.config)
+
+    def delete_feed(self):
+        logging.debug("Entered USERID: %s" % self.args.delete_feed)
+        helper.deleteFeed(self.args.delete_feed, self.config)
 
 
 
@@ -137,7 +155,6 @@ class M2em:
     def list_users(self):
         helper.printUsers(self.config)
         pass
-
 
 
     '''    
@@ -205,6 +222,21 @@ class M2em:
 
         if self.args.switch_chapter:
             self.switch_chapter_status()
+            return
+
+
+        if self.args.delete_user:
+            self.delete_user()
+            return
+
+
+        if self.args.delete_chapter:
+            self.delete_chapter()
+            return
+
+
+        if self.args.delete_feed:
+            self.delete_feed()
             return
 
 

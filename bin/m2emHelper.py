@@ -345,6 +345,122 @@ def switchUserSend(userid,config):
 
 
 
+'''
+Delete User!
+'''
+def deleteUser(userid, config):
+
+    # Get database config
+    database = config["Database"]
+
+
+    # Open Database
+    try:
+        conn = sqlite3.connect(database)
+    except Exception as e:
+        print("Could not connect to DB %s" % e)
+
+    c = conn.cursor()
+    logging.debug("Succesfully Connected to DB %s" % database)
+
+    # check if user exists
+    __data = c.execute("select * from user where userid=(?)", (userid,))
+    __userdata = __data.fetchone()
+
+    # Delete user
+    if not __userdata == None:
+        try:
+            c.execute("delete from user where userid=(?)", (userid,))
+            conn.commit()
+            logging.info("Deleted user with ID %s." % userid)
+        except Exception as e:
+            logging.info("Could not delete user! %s" % e)
+    else:
+        logging.info("User with ID %s does not exist!"% userid)
+
+    c.close()
+
+
+
+
+'''
+Delete Chapter!
+'''
+def deleteChapter(chapterid, config):
+
+    # Get database config
+    database = config["Database"]
+
+
+    # Open Database
+    try:
+        conn = sqlite3.connect(database)
+    except Exception as e:
+        print("Could not connect to DB %s" % e)
+
+    c = conn.cursor()
+    logging.debug("Succesfully Connected to DB %s" % database)
+
+    # check if user exists
+    __data = c.execute("select * from chapter where chapterid=(?)", (chapterid,))
+    __chapterdata = __data.fetchone()
+
+    # Delete user
+    if not __chapterdata == None:
+        try:
+            c.execute("delete from chapter where chapterid=(?)", (chapterid,))
+            conn.commit()
+            logging.info("Deleted chapter with ID %s." % chapterid)
+        except Exception as e:
+            logging.info("Could not delete chapter! %s" % e)
+    else:
+        logging.info("Chapter with ID %s does not exist!"% chapterid)
+
+    c.close()
+
+
+
+
+
+
+
+'''
+Delete Feed!
+'''
+def deleteFeed(feedid, config):
+
+    # Get database config
+    database = config["Database"]
+
+
+    # Open Database
+    try:
+        conn = sqlite3.connect(database)
+    except Exception as e:
+        print("Could not connect to DB %s" % e)
+
+    c = conn.cursor()
+    logging.debug("Succesfully Connected to DB %s" % database)
+
+    # check if user exists
+    __data = c.execute("select * from feeds where feedid=(?)", (feedid,))
+    __chapterdata = __data.fetchone()
+
+    # Delete user
+    if not __chapterdata == None:
+        try:
+            c.execute("delete from feeds where feedid=(?)", (feedid,))
+            conn.commit()
+            logging.info("Deleted feed with ID %s." % feedid)
+        except Exception as e:
+            logging.info("Could not delete feed! %s" % e)
+    else:
+        logging.info("Feed with ID %s does not exist!"% feedid)
+
+    c.close()
+
+
+
 
 
 '''
