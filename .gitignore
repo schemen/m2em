@@ -5,3 +5,4 @@ __pycache__
 comic/*
 kindlegen.exe
 .idea
+venv
