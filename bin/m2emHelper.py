@@ -23,7 +23,53 @@ import bin.sourceparser.m2emMangastream as msparser
 
 
 
+'''
+Create Database!
+'''
+def createDB(config):
 
+    # get database name
+    database = config["Database"]
+
+    # Table Data
+    sql_table_chapters  = """CREATE TABLE IF NOT EXISTS chapter (
+                            chapterid	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                            origin	TEXT,
+                            title	TEXT NOT NULL,
+                            date	TEXT,
+                            url	TEXT NOT NULL,
+                            desc	TEXT,
+                            ispulled	INTEGER DEFAULT 0,
+                            isconverted	INTEGER DEFAULT 0,
+                            issent	INTEGER DEFAULT 0,
+                            pages	INTEGER DEFAULT 0,
+                            chapter	INTEGER DEFAULT 0,
+                            manganame	TEXT);"""
+
+
+    sql_table_users     = """CREATE TABLE IF NOT EXISTS user (
+                            userid	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                            Name	TEXT NOT NULL,
+                            Email	TEXT,
+                            kindle_mail	TEXT,
+                            sendToKindle	INTEGER DEFAULT 0);"""
+
+    sql_table_feeds     = """CREATE TABLE IF NOT EXISTS feeds (
+                            feedid	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                            url	TEXT NOT NULL);"""
+
+    # Create DB
+    try:
+        conn = sqlite3.connect(database)
+        logging.debug(sqlite3.version)
+        c = conn.cursor()
+        c.execute(sql_table_chapters)
+        c.execute(sql_table_users)
+        c.execute(sql_table_feeds)
+    except Exception as e:
+        logging.info(e)
+    finally:
+        conn.close()
 
 '''
 Function set manga as sent
@@ -672,9 +718,9 @@ def getMangaData(url):
 
     # Mangastream Parser
     if origin == "mangastream.com":
-  
+
         logging.debug("Getting Mangadata from Mangastream.com for %s" % url)
-      
+
         # Load page once to hand it over to parser function
         logging.debug("Loading Page to gather data...")
         page = requests.get(url)

@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import os
+import sys
 import logging
 import time
 import argparse
@@ -32,6 +34,9 @@ class M2em:
         self.config = None
         if not self.config:
             self.read_config()
+        # Check if Database exists, else create
+        if not os.path.isfile(self.config["Database"]):
+            helper.createDB(self.config)
 
 
     def read_arguments(self):
@@ -48,6 +53,8 @@ class M2em:
         parser.add_argument("--list-feeds", help="Lists all feeds",
                                 action="store_true")
         parser.add_argument("--list-users", help="Lists all Users",
+                                action="store_true")
+        parser.add_argument("-cd", "--create-db", help="Creates DB. Uses Configfile for Naming",
                                 action="store_true")
         parser.add_argument("-s", "--switch-send", help="Pass ID of User. Switches said user Send eBook status")
         parser.add_argument("-S", "--switch-chapter", help="Pass ID of Chapter. Switches said Chapter Sent status")
@@ -170,6 +177,16 @@ class M2em:
         pass
 
 
+    '''    
+    Catch -cd/--create-db
+    '''
+    def create_db(self):
+        helper.createDB(self.config)
+        pass
+
+
+
+
     '''
     This are the worker, one round
     '''
@@ -242,6 +259,10 @@ class M2em:
 
         if self.args.delete_feed:
             self.delete_feed()
+            return
+
+        if self.args.create_db:
+            self.create_db()
             return
 
 
