@@ -45,6 +45,7 @@ class M2em:
         parser.add_argument("--list-users", help="Lists all Users",
                                 action="store_true")
         parser.add_argument("-s", "--switch-send", help="Pass ID of User. Switches said user Send eBook status")
+        parser.add_argument("-S", "--switch-chapter", help="Pass ID of Chapter. Switches said Chapter Sent status")
         parser.add_argument("--daemon", help="Run as daemon",
                                 action="store_true")
         parser.add_argument("-d", "--debug", help="Debug Mode",
@@ -94,6 +95,17 @@ class M2em:
     def switch_user_status(self):
         logging.debug("Entered USERID: %s" % self.args.switch_send)
         helper.switchUserSend(self.args.switch_send, self.config)
+
+
+
+    '''
+    Catch -s/--switch-user
+    '''
+    def switch_chapter_status(self):
+        logging.debug("Entered CHAPTERID: %s" % self.args.switch_chapter)
+        helper.switchChapterSend(self.args.switch_chapter, self.config)
+
+
 
 
     '''    
@@ -188,6 +200,11 @@ class M2em:
 
         if self.args.list_users:
             self.list_users()
+            return
+
+
+        if self.args.switch_chapter:
+            self.switch_chapter_status()
             return
 
 
