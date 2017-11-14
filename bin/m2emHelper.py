@@ -76,7 +76,7 @@ def writeFeed(url,config):
     try:
         c.execute("INSERT INTO feeds (url) VALUES (?)", (url,))
         conn.commit()
-        print("Succesfully added \"%s\" to the List of RSS Feeds" % url)
+        logging.info("Succesfully added \"%s\" to the List of RSS Feeds" % url)
     except Exception as e:
         logging.info("Failed to save feed into database: %s" % e)
     conn.close
