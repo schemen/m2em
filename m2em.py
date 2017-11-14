@@ -3,8 +3,8 @@ import logging
 import time
 import argparse
 import configparser
-import validators
 import datetime
+import validators
 # Start of the fun!
 import bin.m2emHelper as helper
 import bin.m2emRssParser as mparser

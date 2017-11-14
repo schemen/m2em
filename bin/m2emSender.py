@@ -1,6 +1,5 @@
 import logging
 import os
-import bin.m2emHelper as helper
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
@@ -9,6 +8,7 @@ from email.mime.base import MIMEBase
 from email.utils import COMMASPACE, formatdate, make_msgid
 from email.generator import Generator
 from email import encoders
+import bin.m2emHelper as helper
 
 try:
     from StringIO import StringIO

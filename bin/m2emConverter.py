@@ -1,8 +1,9 @@
 import logging
 import os
 import zipfile
-import bin.m2emHelper as helper
 import subprocess
+import bin.m2emHelper as helper
+
 
 def RecursiveConverter(config):
 
@@ -66,5 +67,5 @@ def RecursiveConverter(config):
             except Exception as e:
                 logging.debug("Failed to convert epub %s" % e)
 
-def ChapterConverter(imagelocation,config):
+def ChapterConverter(imagelocation, config):
     pass
