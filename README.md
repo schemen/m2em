@@ -148,6 +148,12 @@ Finished sending ebooks!
 ## Other
 Everything else should be self-explanatory with the "-h" option.
 
+## Known Issues
+* Mangafox is not yet supported, in the works
+* None other so far
+
+Please Open an issue if you find anything!
+
 # Acknowledgement
 I greatly thank Ciro Mattia Gonano and Paweł Jastrzębski that created the KCC Library that enables the automatic conversation into Ebooks that are compatible with all Comic features of the Kindle!
 https://github.com/ciromattia/kcc
