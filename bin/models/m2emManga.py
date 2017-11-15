@@ -29,15 +29,15 @@ class Manga:
 
         # Getting specific manga data
         logging.debug("Fetching Data from Weblink")
-        mangadata = helper.getMangaData(self.chapter_link)
+        mangadata = helper.getMangaData(self.chapter_link, entry)
         logging.debug("Finished Collecting Chapter Data!")
 
         self.manga_name = mangadata[0]
-        self.title = entry.title
+        self.title = mangadata[3]
         self.chapter = mangadata[2]
-        self.chapter_name = entry.description
+        self.chapter_name = mangadata[4]
         self.chapter_pages = mangadata[1]
-        self.chapter_pubDate = entry.published
+        self.chapter_pubDate = mangadata[5]
         self.parent_feed = parent_feed
 
         # Set some defaul values

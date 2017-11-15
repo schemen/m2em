@@ -12,6 +12,7 @@ except ImportError:
     from urlparse import urlparse
 
 import bin.sourceparser.m2emMangastream as msparser
+import bin.sourceparser.m2emMangafox as mxparser
 
 '''
 
@@ -711,15 +712,21 @@ def getSourceURL(url):
 Function that gets Manga Data from Chapter URL
 Returns: mangadata (array)
 '''
-def getMangaData(url):
+def getMangaData(url,entry):
 
     # Get source of to decide which parser to use
     origin = getSourceURL(url)
 
+    print(origin)
     # Mangastream Parser
     if origin == "mangastream.com":
 
         logging.debug("Getting Mangadata from Mangastream.com for %s" % url)
+
+        # Easy Stuff
+        title = entry.title
+        chapter_name = entry.description
+        chapter_pubDate = entry.published
 
         # Load page once to hand it over to parser function
         logging.debug("Loading Page to gather data...")
@@ -732,11 +739,29 @@ def getMangaData(url):
 
         logging.debug("Mangadata succesfully loaded")
 
-        mangadata = [manganame, pages, chapter]
+        mangadata = [manganame, pages, chapter, title, chapter_name, chapter_pubDate]
 
     # Mangafox Parser
-    elif origin == "mangafox.com":
-        logging.info("Getting Mangadata from Mangafox.me")
+    elif origin == "mangafox.me":
+        logging.debug("Getting Mangadata from Mangafox.me for %s" % url)
+
+        # Easy Stuff
+        title = entry.title
+        chapter_pubDate = entry.published
+
+        # Load page once to hand it over to parser function
+        logging.debug("Loading Page to gather data...")
+        page = requests.get(url)
+
+        # Getting the data
+        manganame    = mxparser.getTitle(page)
+        pages        = mxparser.getPages(page)
+        chapter      = mxparser.getChapter(url)
+        chapter_name = mxparser.getChapterName(page)
+
+        logging.debug("Mangadata succesfully loaded")
+
+        mangadata = [manganame, pages, chapter, title, chapter_name, chapter_pubDate]
 
 
     else:
