@@ -17,6 +17,7 @@ M2em requires Python3 and I highly recommend working in a virtualenv. Some OS re
 
 ## Create and install virtual environment
 ```x-sh
+git clone git@github.com:schemen/m2em.git && cd m2em
 virtualenv venv -p python3
 source venv/bin/activate
 pip install -r requirements.txt
