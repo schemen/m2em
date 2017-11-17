@@ -34,5 +34,8 @@ def RssParser(config):
             current_manga = Manga()
             current_manga.database = database
             current_manga.load_from_feed(entry, str(i[1]))
-            current_manga.print_manga()
-            current_manga.save()
+
+            # No need to continue if it is already saved :)
+            if len(current_manga.duplicated) == 0:
+                current_manga.print_manga()
+                current_manga.save()
