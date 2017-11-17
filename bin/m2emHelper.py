@@ -558,7 +558,7 @@ def switchChapterSend(chapterid,config):
 
 
 '''
-Function that gets feed data and display it nicely
+Function that prints the last 10 chapters
 Returns: N/A
 '''
 def printChapters(config):
@@ -586,6 +586,9 @@ def printChapters(config):
     # Reverse List to get newest first
     __tabledata.reverse()
 
+    #Cut the list down to max 10 articles
+    __cuttabledata = __tabledata[:15]
+
     table = texttable.Texttable(max_width=120)
     table.set_deco(texttable.Texttable.HEADER)
     table.set_cols_align(["l", "l", "l", "l", "l", "l"])
@@ -598,12 +601,14 @@ def printChapters(config):
     table.header (["ID", "MANGA", "CHAPTER", "CHAPTERNAME", "RSS ORIGIN", "SEND STATUS"])
 
     logging.info("Listing the last 10 chapters:")
-    for i in range(0,10):
-        if __tabledata[i][8] == 1:
+    for row in __cuttabledata:
+        # Rename row[8]
+        if row[8] == 1:
             sendstatus = "SENT"
         else:
             sendstatus = "NOT SENT"
-        table.add_row([__tabledata[i][0], __tabledata[i][11], __tabledata[i][10], __tabledata[i][5]+"\n", str(__tabledata[i][1]), sendstatus])
+        table.add_row([row[0], row[11], row[10], row[5]+"\n", str(row[1]), sendstatus])
+
     logging.info(table.draw())
 
 
