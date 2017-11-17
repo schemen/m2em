@@ -5,12 +5,7 @@ import sqlite3
 import texttable
 import requests
 import validators
-
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
-
+from urllib.parse import urlparse
 import bin.sourceparser.m2emMangastream as msparser
 import bin.sourceparser.m2emMangafox as mxparser
 
@@ -71,6 +66,7 @@ def createDB(config):
         logging.info(e)
     finally:
         conn.close()
+        logging.info("Created database %s" % database)
 
 '''
 Function set manga as sent
