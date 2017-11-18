@@ -38,7 +38,7 @@ def getChapterName(page):
     soup = BeautifulSoup(page.content, 'html.parser')
 
     #Get Manga Titel
-    search =re.search(': (.*?) at MangaFox.me"', str(soup))
+    search = re.search(': (.*?) at MangaFox.me"', str(soup))
     chaptername = search.group(1)
     return chaptername
 
@@ -88,7 +88,7 @@ def getPagesUrl(starturl,pages):
         urlpathsplit = urlpath.split("/")
         urlpathsplit[-1] = str(page)
         fullurllocation = "/".join(urlpathsplit)
-        fullurl = parsed.scheme + "://" + parsed.netloc + fullurllocation
+        fullurl = parsed.scheme + "://" + parsed.netloc + fullurllocation + ".html"
         pagesurllist.append(fullurl)
 
     logging.debug("All pages:")
@@ -107,8 +107,8 @@ def getImageUrl(pageurl):
 
     #Pass page to parser
     soup = BeautifulSoup(page.content, 'html.parser')
-    var1 = soup.find(id='manga-page')
+    var1 = soup.find(id='image')
 
-    imageurl = "https:" + var1['src']
+    imageurl = var1['src']
     return imageurl
     pass

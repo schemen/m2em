@@ -3,7 +3,7 @@ import os
 import requests
 import bin.m2emHelper as helper
 import bin.sourceparser.m2emMangastream as msparser
-
+import bin.sourceparser.m2emMangafox as mxparser
 
 def ChapterDownloader(config):
     
@@ -59,9 +59,16 @@ def ChapterDownloader(config):
                 
 
             # Mangafox Parser
-            elif origin == "mangafox.com":
-                #logging.info("Getting Mangadata from Mangafox.me")
-                pass
+            elif origin == "mangafox.me":
+                urllist = mxparser.getPagesUrl(mangastarturl,mangapages)
+
+
+                # Turn Manga pages into Image links!
+                imageurls=[]
+                for i in urllist:
+                    imageurls.append(mxparser.getImageUrl(i))
+                logging.debug("List of all Images for %s" % mangatitle)
+                logging.debug(imageurls)
 
             else:
                 pass
