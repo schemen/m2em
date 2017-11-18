@@ -783,3 +783,14 @@ def createFolder(folder):
         logging.debug("Folder %s Created!" % folder)
     else:
         logging.debug("Folder %s Exists!" % folder)
+
+
+'''
+Function that returns sanetized folder name
+'''
+def sanetizeName(name):
+    if ":" in name:
+        name = name.replace(":", "_")
+        return name
+    else:
+        return name

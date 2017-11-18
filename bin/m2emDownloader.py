@@ -1,6 +1,7 @@
 import logging
 import os
 import requests
+from shutil import move
 import bin.m2emHelper as helper
 import bin.sourceparser.m2emMangastream as msparser
 import bin.sourceparser.m2emMangafox as mxparser
@@ -28,14 +29,27 @@ def ChapterDownloader(config):
         mangastarturl   = chapter[4]
         mangapages      = chapter[9]
         mangatitle      = chapter[2]
+        manganame       = chapter[11]
 
         # check if mangatitle contains ":" characters that OS can't handle as folders
-        if ":" in mangatitle:
-            mangatitle = mangatitle.replace(":", "_")
+        mangatitle = helper.sanetizeName(mangatitle)
 
-        downloadfolder  = str(saveloc + mangatitle + "/images")
+        # check if manganame contains ":" characters that OS can't handle as folders
+        manganame = helper.sanetizeName(manganame)
+
+        # Old Download folder from v0.1.0
+        oldlocation = str(saveloc + mangatitle)
+        newlocation = str(saveloc + manganame)
+
+        # Define Download location
+        downloadfolder  = str(saveloc + manganame + "/" + mangatitle + "/images")
 
 
+        # Check if the old DL location is being used
+        if os.path.isdir(oldlocation):
+            logging.info("Moving old DL location to new one")
+            helper.createFolder(newlocation)
+            move(oldlocation, newlocation)
 
 
         if os.path.isdir(downloadfolder):
