@@ -22,14 +22,17 @@ def RecursiveConverter(config):
 
         # get relevant data of this Manga
         mangatitle   = chapter[2]
+        manganame    = chapter[11]
 
         # check if mangatitle contains ":" characters that OS can't handle as folders
-        if ":" in mangatitle:
-            mangatitle = mangatitle.replace(":", "_")
+        mangatitle = helper.sanetizeName(mangatitle)
 
-        imagefolder  = str(saveloc + mangatitle + "/images/")
-        eblocation   = str(saveloc + mangatitle + "/" + mangatitle + "." + ebformat.lower())
-        cbzlocation  = str(saveloc + mangatitle + "/" + mangatitle + ".cbz")
+        # check if manganame contains ":" characters that OS can't handle as folders
+        manganame = helper.sanetizeName(manganame)
+
+        imagefolder  = str(saveloc + manganame + "/"+  mangatitle + "/images/")
+        eblocation   = str(saveloc + manganame + "/"+  mangatitle + "/" + mangatitle + "." + ebformat.lower())
+        cbzlocation  = str(saveloc + manganame + "/"+ mangatitle + "/" + mangatitle + ".cbz")
 
 
         # Create CBZ to make creation easier
@@ -43,7 +46,7 @@ def RecursiveConverter(config):
             try:
                 zf = zipfile.ZipFile(cbzlocation, "w")
             except Exception as e:
-                logging.warn("Failed opening archive! %s" % e)
+                logging.warning("Failed opening archive! %s" % e)
 
 
 
