@@ -4,6 +4,9 @@ import requests
 import bin.m2emHelper as helper
 import bin.sourceparser.m2emMangastream as msparser
 import bin.sourceparser.m2emMangafox as mxparser
+from PIL import Image
+from PIL import ImageOps
+from PIL import ImageFilter
 
 def ChapterDownloader(config):
     
@@ -81,8 +84,32 @@ def ChapterDownloader(config):
                 counter = 0
                 for image in imageurls:
                     counter = counter + 1
-                    f = open(downloadfolder + "/" + str("{0:0=3d}".format(counter)) + ".png", 'wb')
+
+                    imagepath = downloadfolder + "/" + str("{0:0=3d}".format(counter)) + ".png"
+
+                    f = open(imagepath, 'wb')
                     f.write(requests.get(image).content)
                     f.close
+
+
+                    # Cleanse image, remove footer
+                    #
+                    #   I have borrowed this code from the kmanga project.
+                    #   https://github.com/aplanas/kmanga/blob/master/mobi/mobi.py#L416
+                    #   Thanks a lot to Alberto Planas for coming up with it!
+                    #
+                    if origin == "mangafox.me":
+                        logging.debug("Cleaning Mangafox")
+                        img = Image.open(imagepath)
+                        _img = ImageOps.invert(img.convert(mode='L'))
+                        _img = _img.point(lambda x: x and 255)
+                        _img = _img.filter(ImageFilter.MinFilter(size=3))
+                        _img = _img.filter(ImageFilter.GaussianBlur(radius=5))
+                        _img = _img.point(lambda x: (x >= 48) and x)
+
+                        cleaned = img.crop(_img.getbbox()) if _img.getbbox() else img
+                        cleaned.save(imagepath)
+
+
 
                 logging.info("Finished download!")
