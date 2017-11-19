@@ -55,27 +55,32 @@ With the sourceparser you can add support of a Webhost.
 
 ### Help output:
 ```
-usage: m2em.py [-h] [-r RSS_FEED] [-u] [-l] [-L] [--list-feeds] [--list-users]
-               [-cd] [-s SWITCH_SEND] [-S SWITCH_CHAPTER] [-dc DELETE_CHAPTER]
-               [-du DELETE_USER] [-df DELETE_FEED] [--daemon] [-d]
+usage: m2em.py [-h] [-af ADD_FEED] [-au] [-lc] [-Lc] [-lf] [-lu] [-cd] [-a]
+               [-s] [-ss SWITCH_SEND] [-sc SWITCH_CHAPTER]
+               [-dc DELETE_CHAPTER] [-du DELETE_USER] [-df DELETE_FEED]
+               [--daemon] [-d]
 
 Manga to eManga - m2em
 
 optional arguments:
   -h, --help            show this help message and exit
-  -r RSS_FEED, --rss-feed RSS_FEED
+  -af ADD_FEED, --add-feed ADD_FEED
                         Add RSS Feed of Manga. Only Mangastream & MangaFox are
                         supported
-  -u, --add-user        Adds new user
-  -l, --list-chapters   Lists the last 10 Chapters
-  -L, --list-chapters-all
+  -au, --add-user       Adds new user
+  -lc, --list-chapters  Lists the last 10 Chapters
+  -Lc, --list-chapters-all
                         Lists all Chapters
-  --list-feeds          Lists all feeds
-  --list-users          Lists all Users
+  -lf, --list-feeds     Lists all feeds
+  -lu, --list-users     Lists all Users
   -cd, --create-db      Creates DB. Uses Configfile for Naming
-  -s SWITCH_SEND, --switch-send SWITCH_SEND
+  -a, --action          Start action. Options are: rss (collecting feed data),
+                        downloader, converter or sender
+  -s, --start           Start a single loop. If no arguments are passed, a
+                        single loop will also start
+  -ss SWITCH_SEND, --switch-send SWITCH_SEND
                         Pass ID of User. Switches said user Send eBook status
-  -S SWITCH_CHAPTER, --switch-chapter SWITCH_CHAPTER
+  -sc SWITCH_CHAPTER, --switch-chapter SWITCH_CHAPTER
                         Pass ID of Chapter. Switches said Chapter Sent status
   -dc DELETE_CHAPTER, --delete-chapter DELETE_CHAPTER
                         Pass ID of Chapter. Deletes said Chapter
@@ -91,7 +96,7 @@ optional arguments:
 To have a working environment you need to add some initial data and create the database
 ```x-sh
 ./m2em.py --create-db # Create a DB
-./m2em.py --rss-feed <URL> # Add an RSS Feed you want to pull
+./m2em.py --add-feed <URL> # Add an RSS Feed you want to pull
 # Please note that you should set the sending AFTER a complete run for now
 ./m2em.py --add-user  # Add a user
 
@@ -130,7 +135,9 @@ To start a single run through the workers, you can simply execute the main progr
 ```
 
 If you wish to run the program as a daemon, start it with the option "--daemon". It will re-run at the config "Sleep" in second.
-
+```
+./m2em.py --daemon
+```
 
 ### A complete run with nothing happening:
 ```

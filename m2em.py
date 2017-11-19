@@ -34,6 +34,7 @@ class M2em:
         self.config = None
         if not self.config:
             self.read_config()
+
         # Check if Database exists, else create
         if not os.path.isfile(self.config["Database"]):
             helper.createDB(self.config)
@@ -43,21 +44,25 @@ class M2em:
 
         # Get user Input
         parser = argparse.ArgumentParser(description='Manga to eManga - m2em')
-        parser.add_argument("-r", "--rss-feed", help="Add RSS Feed of Manga. Only Mangastream & MangaFox are supported")
-        parser.add_argument("-u", "--add-user", help="Adds new user",
+        parser.add_argument("-af", "--add-feed", help="Add RSS Feed of Manga. Only Mangastream & MangaFox are supported")
+        parser.add_argument("-au", "--add-user", help="Adds new user",
                                 action="store_true")
-        parser.add_argument("-l", "--list-chapters", help="Lists the last 10 Chapters",
+        parser.add_argument("-lc", "--list-chapters", help="Lists the last 10 Chapters",
                                 action="store_true")
-        parser.add_argument("-L", "--list-chapters-all", help="Lists all Chapters",
+        parser.add_argument("-Lc", "--list-chapters-all", help="Lists all Chapters",
                                 action="store_true")
-        parser.add_argument("--list-feeds", help="Lists all feeds",
+        parser.add_argument("-lf", "--list-feeds", help="Lists all feeds",
                                 action="store_true")
-        parser.add_argument("--list-users", help="Lists all Users",
+        parser.add_argument("-lu", "--list-users", help="Lists all Users",
                                 action="store_true")
         parser.add_argument("-cd", "--create-db", help="Creates DB. Uses Configfile for Naming",
                                 action="store_true")
-        parser.add_argument("-s", "--switch-send", help="Pass ID of User. Switches said user Send eBook status")
-        parser.add_argument("-S", "--switch-chapter", help="Pass ID of Chapter. Switches said Chapter Sent status")
+        parser.add_argument("-a", "--action", help="Start action. Options are: rss (collecting feed data), downloader, converter or sender ",
+                            action="store_true")
+        parser.add_argument("-s", "--start", help="Start a single loop. If no arguments are passed, a single loop will also start",
+                            action="store_true")
+        parser.add_argument("-ss", "--switch-send", help="Pass ID of User. Switches said user Send eBook status")
+        parser.add_argument("-sc", "--switch-chapter", help="Pass ID of Chapter. Switches said Chapter Sent status")
         parser.add_argument("-dc", "--delete-chapter", help="Pass ID of Chapter. Deletes said Chapter")
         parser.add_argument("-du", "--delete-user", help="Pass ID of User. Deletes said User")
         parser.add_argument("-df", "--delete-feed", help="Pass ID of Feed. Deletes said Feed")
@@ -94,12 +99,12 @@ class M2em:
 
 
     '''
-    Catch -r/--add-rss
+    Catch -af/--add-feed
     '''
     def save_feed_to_db(self):
-        logging.debug("Entered URL: %s" % self.args.rss_feed)
-        if validators.url(self.args.rss_feed):
-            helper.writeFeed(self.args.rss_feed, self.config)
+        logging.debug("Entered URL: %s" % self.args.add_feed)
+        if validators.url(self.args.add_feed):
+            helper.writeFeed(self.args.add_feed, self.config)
         else:
             logging.error("You need to enter an URL!")
 
@@ -191,7 +196,7 @@ class M2em:
     This are the worker, one round
     '''
     #  Worker to get and parse  rss feeds
-    def parse_rss_feeds(self):
+    def parse_add_feeds(self):
         mparser.RssParser(self.config)
 
     # Worker to fetch all images
@@ -213,7 +218,7 @@ class M2em:
     '''
     def run(self):
 
-        if self.args.rss_feed:
+        if self.args.add_feed:
             self.save_feed_to_db()
             return
 
@@ -275,7 +280,7 @@ class M2em:
             logging.info("Starting Loop at %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
             logging.info("Starting RSS Data Fetcher!")
-            self.parse_rss_feeds()
+            self.parse_add_feeds()
             logging.info("Finished Loading RSS Data")
 
             logging.info("Starting all outstanding Chapter Downloads!")
