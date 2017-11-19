@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import logging
+import datetime
 import os
 import sqlite3
 import texttable
@@ -794,3 +795,21 @@ def sanetizeName(name):
         return name
     else:
         return name
+
+
+
+
+'''
+Check if time is older than 24h
+Returns: true or false
+'''
+def checkTime(time):
+    objecttime = datetime.datetime.strptime(time, "%a, %d %b %Y %H:%M:%S %z")
+    now = datetime.datetime.now(datetime.timezone.utc)
+
+    delta = now - objecttime
+
+    if delta.days == 0:
+        return True
+    else:
+        return False
