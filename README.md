@@ -49,7 +49,8 @@ As a concept, M2em has different workers that run in a loop. All Chapter/user da
 With the sourceparser you can add support of a Webhost.
 
 ## Supported Websites
-Only Mangastream as of now (Mangafox is in the works)
+* Mangastream
+* MangaFox
 
 # Usage
 
@@ -92,6 +93,7 @@ To have a working environment you need to add some initial data and create the d
 ```x-sh
 ./m2em.py --create-db # Create a DB
 ./m2em.py --rss-feed <URL> # Add an RSS Feed you want to pull
+# Please note that you should set the sending AFTER a complete run for now
 ./m2em.py --add-user  # Add a user
 
 ```
@@ -150,8 +152,8 @@ Finished sending ebooks!
 Everything else should be self-explanatory with the "-h" option.
 
 ## Known Issues
-* Mangafox is not yet supported, in the works
-* None other so far
+* There is a huge data load in the beginning. It is recommended to only activate sending of Emails after one complete run
+* MangaFox has issues with SSL Verification on some systems. For now, Simply add the http feed.
 
 Please Open an issue if you find anything!
 
