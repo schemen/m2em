@@ -38,33 +38,36 @@ def LoopDownloader(config):
         chapterdate     = chapter[3]
 
 
-        # Only start run if chapter is younger than 24h
-        if helper.checkTime(chapterdate):
 
 
-            # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
-            mangatitle = helper.sanetizeName(mangatitle)
-            manganame = helper.sanetizeName(manganame)
+        # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
+        mangatitle = helper.sanetizeName(mangatitle)
+        manganame = helper.sanetizeName(manganame)
 
-            # Old Download folder from v0.1.0
-            oldlocation = str(saveloc + mangatitle)
-            newlocation = str(saveloc + manganame)
+        # Old Download folder from v0.1.0
+        oldlocation = str(saveloc + mangatitle)
+        newlocation = str(saveloc + manganame)
 
-            # Define Download location
-            downloadfolder  = str(saveloc + manganame + "/" + mangatitle + "/images")
-
-
-            # Check if the old DL location is being used and fix it!
-            if os.path.isdir(oldlocation):
-                logging.info("Moving old DL location to new one")
-                helper.createFolder(newlocation)
-                move(oldlocation, newlocation)
+        # Define Download location
+        downloadfolder  = str(saveloc + manganame + "/" + mangatitle + "/images")
 
 
-            # Verify if chapter has been downloaded already, or if it may require redownload due to corruption
-            if helper.verifyDownload(config, chapter):
-                logging.debug("Manga %s downloaded already!" % mangatitle)
-            else:
+        # Check if the old DL location is being used and fix it!
+        if os.path.isdir(oldlocation):
+            logging.info("Moving old DL location to new one")
+            helper.createFolder(newlocation)
+            move(oldlocation, newlocation)
+
+
+        # Verify if chapter has been downloaded already, or if it may require redownload due to corruption
+        if helper.verifyDownload(config, chapter):
+            logging.debug("Manga %s downloaded already!" % mangatitle)
+        else:
+
+            # Only start run if chapter is younger than 24h
+            logging.debug("The loop will only consider Chapters younger than 24h!")
+            if helper.checkTime(chapterdate):
+
                 logging.info("Starting download of %s..." % mangatitle)
 
                 # get Origin of manga
@@ -140,5 +143,3 @@ def LoopDownloader(config):
 
 
                     logging.info("Finished download!")
-        else:
-            logging.debug("Chapter %s is older than 1 day. Skipping in the loop..." % mangatitle)
