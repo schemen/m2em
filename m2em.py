@@ -194,7 +194,7 @@ class M2em:
 
     # Worker to fetch all images
     def images_fetcher(self):
-        mdownloader.ChapterDownloader(self.config)
+        mdownloader.LoopDownloader(self.config)
 
     # Worker to convert all downloaded chapters into ebooks
     def image_converter(self):

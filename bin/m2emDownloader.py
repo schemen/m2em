@@ -9,7 +9,12 @@ from PIL import Image
 from PIL import ImageOps
 from PIL import ImageFilter
 
-def ChapterDownloader(config):
+
+
+'''
+Loop downloader
+'''
+def LoopDownloader(config):
     
     # Load configs required here
     database = config["Database"]
