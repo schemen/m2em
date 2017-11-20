@@ -107,10 +107,13 @@ def ChapterDownloader(config):
                         counter = counter + 1
 
                         imagepath = downloadfolder + "/" + str("{0:0=3d}".format(counter)) + ".png"
+                        tempdl = downloadfolder + "/" + str("{0:0=3d}".format(counter)) + ".tmp"
 
-                        f = open(imagepath, 'wb')
+                        f = open(tempdl, 'wb')
                         f.write(requests.get(image).content)
-                        f.close
+                        f.close()
+
+                        os.rename(tempdl, imagepath)
 
 
                         # Cleanse image, remove footer
