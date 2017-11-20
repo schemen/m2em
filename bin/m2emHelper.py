@@ -883,7 +883,7 @@ def initialize_logger(output_dir, outputlevel):
     logger.addHandler(handler)
  
     # create debug file handler and set level to debug
-    handler = logging.FileHandler(os.path.join(output_dir, "all.log"))
+    handler = logging.FileHandler(os.path.join(output_dir, "debug.log"))
     handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(asctime)s; %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
@@ -892,6 +892,13 @@ def initialize_logger(output_dir, outputlevel):
       # create debug file handler and set level to debug - per run 1 file
     handler = logging.FileHandler(os.path.join(output_dir, "run.log"), "w")
     handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(asctime)s; %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+      # create debug file handler and set level to info
+    handler = logging.FileHandler(os.path.join(output_dir, "m2em.log"))
+    handler.setLevel(logging.INFO)
     formatter = logging.Formatter("%(asctime)s; %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
