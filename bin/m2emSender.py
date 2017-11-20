@@ -46,7 +46,8 @@ def sendEbook(config):
         mangatitle   = chapter[2]
         mangaid      = int(chapter[0])
         issent       = int(chapter[8])
-        eblocation   = str(saveloc + mangatitle + "/" + mangatitle + "." + ebformat.lower())
+        manganame = chapter[11]
+        eblocation = str(saveloc + manganame + "/" + mangatitle + "/" + mangatitle + "." + ebformat.lower())
 
         if issent != 0:
             logging.debug("%s has been sent already!" % mangatitle)
