@@ -3,7 +3,7 @@
 ### Foreword
 I always had the issue of loving my kindle and ebooks and loving mangas. 
 
-While I buy books/mangas to support the author and have a nice collection, I am a very big support of the e-Format and only read on those.
+While I buy books/mangas to support the author and have a nice collection, I love & support the e-Format and only read on those as they're are way easier to use.
 
 Not living in Japan has me not really having any readable access of weekly chapters in eManga format, so I wanted to write something to help me out on that!
 
@@ -17,6 +17,7 @@ M2em requires Python3 and I highly recommend working in a virtualenv. Some OS re
 
 ## Create and install virtual environment
 ```x-sh
+git clone git@github.com:schemen/m2em.git && cd m2em
 virtualenv venv -p python3
 source venv/bin/activate
 pip install -r requirements.txt
