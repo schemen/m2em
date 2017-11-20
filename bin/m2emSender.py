@@ -46,72 +46,77 @@ def sendEbook(config):
         mangatitle   = chapter[2]
         mangaid      = int(chapter[0])
         issent       = int(chapter[8])
-        manganame = chapter[11]
-        eblocation = str(saveloc + manganame + "/" + mangatitle + "/" + mangatitle + "." + ebformat.lower())
+        manganame    = chapter[11]
+        eblocation   = str(saveloc + manganame + "/" + mangatitle + "/" + mangatitle + "." + ebformat.lower())
 
-        if issent != 0:
-            logging.debug("%s has been sent already!" % mangatitle)
+        # Check if ebook has been converted yet, else skip
+        if not os.path.exists(eblocation):
+            logging.debug("Manga %s has not been converted yet." % mangatitle)
         else:
-            logging.info("Sending %s..."% mangatitle)
+
+            if issent != 0:
+                logging.debug("%s has been sent already!" % mangatitle)
+            else:
+                logging.info("Sending %s..."% mangatitle)
 
 
-            for user in users:
-                kindle_mail = user[3]
-                shouldsend  = user[4]
+                for user in users:
+                    kindle_mail = user[3]
+                    shouldsend  = user[4]
 
-                # Check if user wants Mails
-                if shouldsend == "True":
-                    
-                    logging.debug("Compiling Email for %s" % user[1])
+                    # Check if user wants Mails
+                    if shouldsend == "True":
 
-                    # Compile Email
-                    msg = MIMEMultipart()
-                    msg['Subject'] = 'Ebook Delivery of %s' % mangatitle
-                    msg['Date'] = formatdate(localtime=True)
-                    msg['From'] = emailadress
-                    msg['To'] = kindle_mail
-                    msg['Message-ID'] = make_msgid()
+                        logging.debug("Compiling Email for %s" % user[1])
 
-                    text = "Automatic Ebook delivery by m2em."
-                    msg.attach(MIMEText(text))
+                        # Compile Email
+                        msg = MIMEMultipart()
+                        msg['Subject'] = 'Ebook Delivery of %s' % mangatitle
+                        msg['Date'] = formatdate(localtime=True)
+                        msg['From'] = emailadress
+                        msg['To'] = kindle_mail
+                        msg['Message-ID'] = make_msgid()
+
+                        text = "Automatic Ebook delivery by m2em."
+                        msg.attach(MIMEText(text))
 
 
-                    # Add Ebook as attachment
-                    ebfile = open(eblocation, 'rb')
+                        # Add Ebook as attachment
+                        ebfile = open(eblocation, 'rb')
 
-                    attachment = MIMEBase('application', 'octet-stream', name=os.path.basename(eblocation))
-                    attachment.set_payload(ebfile.read())
-                    ebfile.close()
-                    encoders.encode_base64(attachment)
-                    attachment.add_header('Content-Disposition', 'attachment',
-                                  filename=os.path.basename(eblocation))
-                    
-                    msg.attach(attachment)
+                        attachment = MIMEBase('application', 'octet-stream', name=os.path.basename(eblocation))
+                        attachment.set_payload(ebfile.read())
+                        ebfile.close()
+                        encoders.encode_base64(attachment)
+                        attachment.add_header('Content-Disposition', 'attachment',
+                                      filename=os.path.basename(eblocation))
 
-                    # Convert message to string
-                    sio = StringIO()
-                    gen = Generator(sio, mangle_from_=False)
-                    gen.flatten(msg)
-                    msg = sio.getvalue()
+                        msg.attach(attachment)
 
-                    # Send Email Off!
-                    try:
-                        server = smtplib.SMTP(smtpserver,serverport,)
-                        if starttls:
-                            server.starttls()
-                        server.ehlo()
-                        server.login(emailadress,password)
-                        #server.sendmail(emailadress, kindle_mail, msg.as_string())
-                        server.sendmail(emailadress, kindle_mail, msg)
-                        server.close()
-                        logging.debug("Sent email to %s "% kindle_mail)
-                    except smtplib.SMTPException as e:
-                        logging.debug("Could not send email! %s" % e)
+                        # Convert message to string
+                        sio = StringIO()
+                        gen = Generator(sio, mangle_from_=False)
+                        gen.flatten(msg)
+                        msg = sio.getvalue()
 
-                
-            # Set Email as Sent
-            helper.setIsSent(mangaid,database)
-            logging.info("Sent %s to all requested users."% mangatitle)
+                        # Send Email Off!
+                        try:
+                            server = smtplib.SMTP(smtpserver,serverport,)
+                            if starttls:
+                                server.starttls()
+                            server.ehlo()
+                            server.login(emailadress,password)
+                            #server.sendmail(emailadress, kindle_mail, msg.as_string())
+                            server.sendmail(emailadress, kindle_mail, msg)
+                            server.close()
+                            logging.debug("Sent email to %s "% kindle_mail)
+                        except smtplib.SMTPException as e:
+                            logging.debug("Could not send email! %s" % e)
+
+
+                # Set Email as Sent
+                helper.setIsSent(mangaid,database)
+                logging.info("Sent %s to all requested users."% mangatitle)
 
 
 
