@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import logging
+import shutil
 import datetime
 import os
 import sqlite3
@@ -719,7 +720,6 @@ def getMangaData(url,entry):
     # Get source of to decide which parser to use
     origin = getSourceURL(url)
 
-    print(origin)
     # Mangastream Parser
     if origin == "mangastream.com":
 
@@ -813,6 +813,42 @@ def checkTime(time):
         return True
     else:
         return False
+
+
+
+'''
+Verify if chapter has been downloaded
+Returns: true or false
+'''
+def verifyDownload(config, chapter):
+
+    saveloc = config["SaveLocation"]
+    mangapages = chapter[9]
+    mangatitle = chapter[2]
+    manganame = chapter[11]
+
+    downloadfolder = str(saveloc + manganame + "/" + mangatitle + "/images")
+
+    if not os.path.exists(downloadfolder):
+        return False
+    else:
+        # First check checks if there is the right amount of files in the folder
+        if len(os.listdir(downloadfolder)) != int(mangapages):
+            shutil.rmtree(downloadfolder)
+            return False
+        else:
+            # second check checks if there is an unfinished download
+            for item in os.listdir(downloadfolder):
+
+                if item.endswith(".tmp"):
+                    logging.debug("%s seems to be corrupted, removing all images for redownload"% mangatitle)
+                    shutil.rmtree(downloadfolder)
+                    return False
+            return True
+
+
+
+
 
 
 '''
