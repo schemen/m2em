@@ -42,10 +42,8 @@ def LoopDownloader(config):
         if helper.checkTime(chapterdate):
 
 
-            # check if mangatitle contains ":" characters that OS can't handle as folders
+            # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
             mangatitle = helper.sanetizeName(mangatitle)
-
-            # check if manganame contains ":" characters that OS can't handle as folders
             manganame = helper.sanetizeName(manganame)
 
             # Old Download folder from v0.1.0
@@ -56,18 +54,18 @@ def LoopDownloader(config):
             downloadfolder  = str(saveloc + manganame + "/" + mangatitle + "/images")
 
 
-            # Check if the old DL location is being used
+            # Check if the old DL location is being used and fix it!
             if os.path.isdir(oldlocation):
                 logging.info("Moving old DL location to new one")
                 helper.createFolder(newlocation)
                 move(oldlocation, newlocation)
 
 
-            if os.path.isdir(downloadfolder):
+            # Verify if chapter has been downloaded already, or if it may require redownload due to corruption
+            if helper.verifyDownload(config, chapter):
                 logging.debug("Manga %s downloaded already!" % mangatitle)
             else:
                 logging.info("Starting download of %s..." % mangatitle)
-
 
                 # get Origin of manga
                 origin = helper.getSourceURL(mangastarturl)
@@ -142,4 +140,5 @@ def LoopDownloader(config):
 
 
                     logging.info("Finished download!")
-        logging.debug("Chapter %s is older than 1 day. Skipping in the loop..." % mangatitle)
+        else:
+            logging.debug("Chapter %s is older than 1 day. Skipping in the loop..." % mangatitle)

@@ -24,51 +24,55 @@ def RecursiveConverter(config):
         mangatitle   = chapter[2]
         manganame    = chapter[11]
 
-        # check if mangatitle contains ":" characters that OS can't handle as folders
+        # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
         mangatitle = helper.sanetizeName(mangatitle)
-
-        # check if manganame contains ":" characters that OS can't handle as folders
         manganame = helper.sanetizeName(manganame)
 
+
+        # create folder variables
         imagefolder  = str(saveloc + manganame + "/"+  mangatitle + "/images/")
         eblocation   = str(saveloc + manganame + "/"+  mangatitle + "/" + mangatitle + "." + ebformat.lower())
         cbzlocation  = str(saveloc + manganame + "/"+ mangatitle + "/" + mangatitle + ".cbz")
 
-
-        # Create CBZ to make creation easier
-        if os.path.exists(cbzlocation):
-            logging.debug("Manga %s converted to CBZ already!" % mangatitle)
+        # Verify if chapter has been downloaded already
+        if not helper.verifyDownload(config, chapter):
+            logging.debug("Manga %s has not been downloaded!" % mangatitle)
         else:
-            logging.info("Starting conversion to CBZ of %s..." % mangatitle)
+
+            # Create CBZ to make creation easier
+            if os.path.exists(cbzlocation):
+                logging.debug("Manga %s converted to CBZ already!" % mangatitle)
+            else:
+                logging.info("Starting conversion to CBZ of %s..." % mangatitle)
 
 
-            logging.debug("Opening CBZ archive...")
-            try:
-                zf = zipfile.ZipFile(cbzlocation, "w")
-            except Exception as e:
-                logging.warning("Failed opening archive! %s" % e)
+                logging.debug("Opening CBZ archive...")
+                try:
+                    zf = zipfile.ZipFile(cbzlocation, "w")
+                except Exception as e:
+                    logging.warning("Failed opening archive! %s" % e)
 
 
 
-            logging.debug("Writing Images into CBZ")
-            for img in sorted(os.listdir(imagefolder)):
-                image = imagefolder + img
-                logging.debug("Writing %s" % image)
-                zf.write(image,img)
+                logging.debug("Writing Images into CBZ")
+                for img in sorted(os.listdir(imagefolder)):
+                    image = imagefolder + img
+                    logging.debug("Writing %s" % image)
+                    zf.write(image,img)
 
-            zf.close()
+                zf.close()
 
 
-        # Start conversion to Ebook format!
-        if os.path.exists(eblocation):
-            logging.debug("Manga %s converted to Ebook already!" % mangatitle)
-        else:
-            logging.info("Starting conversion to Ebook of %s..." % mangatitle)
+            # Start conversion to Ebook format!
+            if os.path.exists(eblocation):
+                logging.debug("Manga %s converted to Ebook already!" % mangatitle)
+            else:
+                logging.info("Starting conversion to Ebook of %s..." % mangatitle)
 
-            try:
-                subprocess.call(["kcc-c2e", "-p", ebprofile, "-f", ebformat, "-m", "-q", "-r",  "2", "-u", "-s",  cbzlocation])
-            except Exception as e:
-                logging.debug("Failed to convert epub %s" % e)
+                try:
+                    subprocess.call(["kcc-c2e", "-p", ebprofile, "-f", ebformat, "-m", "-q", "-r",  "2", "-u", "-s",  cbzlocation])
+                except Exception as e:
+                    logging.debug("Failed to convert epub %s" % e)
 
 def ChapterConverter(imagelocation, config):
     pass
