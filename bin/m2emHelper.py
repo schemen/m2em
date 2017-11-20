@@ -834,7 +834,11 @@ def initialize_logger(output_dir, outputlevel):
         formatter = logging.Formatter("%(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
- 
+
+    if not os.path.isdir(output_dir):
+        createFolder(output_dir)
+
+
     # create error file handler and set level to error
     handler = logging.FileHandler(os.path.join(output_dir, "error.log"), encoding=None, delay="true")
     handler.setLevel(logging.ERROR)
