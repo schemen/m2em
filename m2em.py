@@ -74,9 +74,11 @@ class M2em:
 
         # Logging
         if self.args.debug:
-            logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+            outputlevel = "debug"
         else:
-            logging.basicConfig(format='%(message)s', level=logging.INFO)
+            outputlevel = "info"
+        helper.initialize_logger("log/", outputlevel)
+
 
 
     #Read Config
