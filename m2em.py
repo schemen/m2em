@@ -57,10 +57,7 @@ class M2em:
                                 action="store_true")
         parser.add_argument("-cd", "--create-db", help="Creates DB. Uses Configfile for Naming",
                                 action="store_true")
-        parser.add_argument("-a", "--action", help="Start action. Options are: rss (collecting feed data), downloader, converter or sender ",
-                            action="store_true")
-        parser.add_argument("-s", "--start", help="Start a single loop. If no arguments are passed, a single loop will also start",
-                            action="store_true")
+        parser.add_argument("-a", "--action", help="Start action. Options are: rss (collecting feed data), downloader, converter or sender ")
         parser.add_argument("-ss", "--switch-send", help="Pass ID of User. Switches said user Send eBook status")
         parser.add_argument("-sc", "--switch-chapter", help="Pass ID of Chapter. Switches said Chapter Sent status")
         parser.add_argument("-dc", "--delete-chapter", help="Pass ID of Chapter. Deletes said Chapter")
@@ -89,15 +86,9 @@ class M2em:
         config_reader.read("config.ini")
         self.config = config_reader["CONFIG"]
 
-        # Load Config Variables
-        if self.config["SaveLocation"]:
-            logging.debug("Succesfully loaded SaveLocation: %s ", self.config["SaveLocation"])
-        if self.config["EbookFormat"]:
-            logging.debug("Succesfully loaded EbookFormat: %s ", self.config["EbookFormat"])
-        if self.config["Database"]:
-            logging.debug("Succesfully loaded Database: %s ", self.config["Database"])
-        if self.config["Sleep"]:
-            logging.debug("Succesfully loaded Database: %s ", self.config["Sleep"])
+        logging.debug("Loaded Config:")
+        logging.debug(self.config)
+
 
 
     '''
