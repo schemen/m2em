@@ -324,11 +324,14 @@ class M2em:
         if self.args.start:
             daemon = True
             while daemon:
-                if not self.args.daemon:
+                if self.args.daemon:
+                    logging.info("Don't forget that the daemon only handles data younger than 24h Hours!")
+                else:
                     daemon = False
+
                 logging.info("#########################")
                 logging.info("Starting Loop at %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                logging.info("Don't forget that the loop only handles data younger than 24h Hours!")
+
 
                 logging.info("Starting RSS Data Fetcher!")
                 self.parse_add_feeds()
