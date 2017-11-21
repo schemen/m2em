@@ -827,6 +827,10 @@ def verifyDownload(config, chapter):
     mangatitle = chapter[2]
     manganame = chapter[11]
 
+    # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
+    mangatitle = sanetizeName(mangatitle)
+    manganame = sanetizeName(manganame)
+
     downloadfolder = str(saveloc + manganame + "/" + mangatitle + "/images")
 
     if not os.path.exists(downloadfolder):
