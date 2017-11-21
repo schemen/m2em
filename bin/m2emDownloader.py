@@ -10,136 +10,135 @@ from PIL import ImageOps
 from PIL import ImageFilter
 
 
+class Downloader:
 
-'''
-Loop downloader
-'''
-def LoopDownloader(config):
-    
-    # Load configs required here
-    database = config["Database"]
-    saveloc  = config["SaveLocation"]
-
-    # Load Chapters from Database
-    chapters = helper.getChapters(database)
-    logging.debug("Loaded Chapers:")
-    for i in chapters:
-        logging.debug(i)
-
-
-    # Start Download loop!
-    for chapter in chapters:
-
-        # get relevant data of this Manga
-        mangastarturl   = chapter[4]
-        mangapages      = chapter[9]
-        mangatitle      = chapter[2]
-        manganame       = chapter[11]
-        chapterdate     = chapter[3]
+    def __init__(self):
+        self.database        = None
+        self.saveloc         = None
+        self.mangastarturl   = None
+        self.mangapages      = None
+        self.mangatitle      = None
+        self.manganame       = None
+        self.chapterdate     = None
+        self.downloadfolder  = None
+        self.origin          = None
+        self.imageurls       = None
 
 
 
+
+    def data_collector(self, config, chapter):
+        
+        # Load configs required here
+        self.database = config["Database"]
+        self.saveloc  = config["SaveLocation"]
+
+        # get relevant data of this Chapter
+        self.mangastarturl   = chapter[4]
+        self.mangapages      = chapter[9]
+        self.mangatitle      = chapter[2]
+        self.manganame       = chapter[11]
+        self.chapterdate     = chapter[3]
 
         # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
-        mangatitle = helper.sanetizeName(mangatitle)
-        manganame = helper.sanetizeName(manganame)
-
-        # Old Download folder from v0.1.0
-        oldlocation = str(saveloc + mangatitle)
-        newlocation = str(saveloc + manganame)
+        self.mangatitle = helper.sanetizeName(self.mangatitle)
+        self.manganame = helper.sanetizeName(self.manganame)
 
         # Define Download location
-        downloadfolder  = str(saveloc + manganame + "/" + mangatitle + "/images")
+        self.downloadfolder  = str(self.saveloc + self.manganame + "/" + self.mangatitle + "/images")
+
+        # get Origin of manga (Which mangawebsite)
+        self.origin = helper.getSourceURL(self.mangastarturl)
+        
+        # Initiate URL list
+        self.imageurls=[]
 
 
+
+
+    def data_processor(self):
+
+        logging.debug("Proccesing data for %s"% self.mangatitle)
         # Check if the old DL location is being used and fix it!
+        oldlocation = str(self.saveloc + self.mangatitle)
+        newlocation = str(self.saveloc + self.manganame)
         if os.path.isdir(oldlocation):
-            logging.info("Moving old DL location to new one")
+            logging.info("Moving %s from old DL location to new one..." % self.mangatitle)
             helper.createFolder(newlocation)
             move(oldlocation, newlocation)
 
 
-        # Verify if chapter has been downloaded already, or if it may require redownload due to corruption
-        if helper.verifyDownload(config, chapter):
-            logging.debug("Manga %s downloaded already!" % mangatitle)
-        else:
-
-            # Only start run if chapter is younger than 24h
-            logging.debug("The loop will only consider Chapters younger than 24h!")
-            if helper.checkTime(chapterdate):
-
-                logging.info("Starting download of %s..." % mangatitle)
-
-                # get Origin of manga
-                origin = helper.getSourceURL(mangastarturl)
+        # Get image urls!
+        # Mangastream Parser
+        if self.origin == "mangastream.com":
+            urllist = msparser.getPagesUrl(self.mangastarturl,self.mangapages)
 
 
-                # Get image urls!
-                # Mangastream Parser
-                if origin == "mangastream.com":
-                    urllist = msparser.getPagesUrl(mangastarturl,mangapages)
+            # Turn Manga pages into Image links!
+            for i in urllist:
+                self.imageurls.append(msparser.getImageUrl(i))
+            logging.debug("List of all Images for %s" % self.mangatitle)
+            logging.debug(self.imageurls)
 
 
-                    # Turn Manga pages into Image links!
-                    imageurls=[]
-                    for i in urllist:
-                        imageurls.append(msparser.getImageUrl(i))
-                    logging.debug("List of all Images for %s" % mangatitle)
-                    logging.debug(imageurls)
+        # Mangafox Parser
+        elif self.origin == "mangafox.me":
+            urllist = mxparser.getPagesUrl(self.mangastarturl,self.mangapages)
 
 
-                # Mangafox Parser
-                elif origin == "mangafox.me":
-                    urllist = mxparser.getPagesUrl(mangastarturl,mangapages)
-
-
-                    # Turn Manga pages into Image links!
-                    imageurls=[]
-                    for i in urllist:
-                        imageurls.append(mxparser.getImageUrl(i))
-                    logging.debug("List of all Images for %s" % mangatitle)
-                    logging.debug(imageurls)
-
-                else:
-                    pass
-
-
-                # Download & save images!
-                # check if we have images to download
-                if not len(imageurls) == 0:
-                    helper.createFolder(downloadfolder)
-                    counter = 0
-                    for image in imageurls:
-                        counter = counter + 1
-
-                        imagepath = downloadfolder + "/" + str("{0:0=3d}".format(counter)) + ".png"
-                        tempdl = downloadfolder + "/" + str("{0:0=3d}".format(counter)) + ".tmp"
-
-                        f = open(tempdl, 'wb')
-                        f.write(requests.get(image).content)
-                        f.close()
-
-                        os.rename(tempdl, imagepath)
-
-
-                        # Cleanse image, remove footer
-                        #
-                        #   I have borrowed this code from the kmanga project.
-                        #   https://github.com/aplanas/kmanga/blob/master/mobi/mobi.py#L416
-                        #   Thanks a lot to Alberto Planas for coming up with it!
-                        #
-                        if origin == "mangafox.me":
-                            logging.debug("Cleaning Mangafox Footer")
-                            img = Image.open(imagepath)
-                            _img = ImageOps.invert(img.convert(mode='L'))
-                            _img = _img.point(lambda x: x and 255)
-                            _img = _img.filter(ImageFilter.MinFilter(size=3))
-                            _img = _img.filter(ImageFilter.GaussianBlur(radius=5))
-                            _img = _img.point(lambda x: (x >= 48) and x)
-
-                            cleaned = img.crop(_img.getbbox()) if _img.getbbox() else img
-                            cleaned.save(imagepath)
+            # Turn Manga pages into Image links!
+            for i in urllist:
+                self.imageurls.append(mxparser.getImageUrl(i))
+            logging.debug("List of all Images for %s" % self.mangatitle)
+            logging.debug(self.imageurls)
 
 
 
-                    logging.info("Finished download!")
+
+
+    def downloader(self):
+        logging.info("Starting download of %s..." % self.mangatitle)
+        # Download & save images!
+        # check if we have images to download
+        if not len(self.imageurls) == 0:
+
+            # Check if we have the Download folder
+            helper.createFolder(self.downloadfolder)
+
+            # Start download Task
+            counter = 0
+            for image in self.imageurls:
+                counter = counter + 1
+
+                imagepath = self.downloadfolder + "/" + str("{0:0=3d}".format(counter)) + ".png"
+                tempdl = self.downloadfolder + "/" + str("{0:0=3d}".format(counter)) + ".tmp"
+
+                # Download the image!
+                f = open(tempdl, 'wb')
+                f.write(requests.get(image).content)
+                f.close()
+
+                # If everything is alright, write image to final name
+                os.rename(tempdl, imagepath)
+
+
+                # Cleanse image, remove footer
+                #
+                #   I have borrowed this code from the kmanga project.
+                #   https://github.com/aplanas/kmanga/blob/master/mobi/mobi.py#L416
+                #   Thanks a lot to Alberto Planas for coming up with it!
+                #
+                if self.origin == "mangafox.me":
+                    logging.debug("Cleaning Mangafox Footer")
+                    img = Image.open(imagepath)
+                    _img = ImageOps.invert(img.convert(mode='L'))
+                    _img = _img.point(lambda x: x and 255)
+                    _img = _img.filter(ImageFilter.MinFilter(size=3))
+                    _img = _img.filter(ImageFilter.GaussianBlur(radius=5))
+                    _img = _img.point(lambda x: (x >= 48) and x)
+
+                    cleaned = img.crop(_img.getbbox()) if _img.getbbox() else img
+                    cleaned.save(imagepath)
+
+            # Finish :)
+            logging.info("Finished download of %s!"% self.mangatitle)
