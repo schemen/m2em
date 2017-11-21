@@ -12,7 +12,7 @@ import bin.m2emHelper as helper
 import bin.m2emRssParser as mparser
 import bin.m2emDownloaderHandler as mdownloader
 import bin.m2emConverterHandler as mconverter
-import bin.m2emSender as msender
+import bin.m2emSenderHandler as msender
 
 #logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
@@ -211,9 +211,9 @@ class M2em:
 
         # Start downloader
         if self.args.action == "downloader":
-            logging.info("Starting downloader to get all outstanding chapters")
+            logging.info("Starting downloader to get all outstanding/selected chapters")
             self.images_fetcher()
-            logging.info("Finished downloading all outstanding chapters.")
+            logging.info("Finished downloading all chapters.")
 
 
 
@@ -222,14 +222,15 @@ class M2em:
 
 
         elif self.args.action == "converter":
-            logging.info("Starting converter to convert all outstanding chapters")
+            logging.info("Starting converter to convert all outstanding/selected chapters")
             self.image_converter()
-            logging.info("Finished converting all remaining chapters!")
+            logging.info("Finished converting all chapters!")
 
 
         elif self.args.action == "sender":
-            logging.info("Action '%s' is not yet implemented." % self.args.action)
-
+            logging.info("Starting sender to send all outstanding/selected chapters")
+            self.send_ebooks()
+            logging.info("Finished sending all chapters!")
 
         else:
             logging.info("%s is not a valid action. Choose between  'rssparser', 'downloader', 'converter' or 'sender'"% self.args.action)
@@ -255,7 +256,7 @@ class M2em:
 
     # Worker to convert all downloaded chapters into ebooks
     def send_ebooks(self):
-        msender.sendEbook(self.config)
+        msender.SenderHandler(self.config, self.args, chapterids=[])
 
 
 
