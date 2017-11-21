@@ -59,13 +59,6 @@ class Downloader:
     def data_processor(self):
 
         logging.debug("Proccesing data for %s"% self.mangatitle)
-        # Check if the old DL location is being used and fix it!
-        oldlocation = str(self.saveloc + self.mangatitle)
-        newlocation = str(self.saveloc + self.manganame)
-        if os.path.isdir(oldlocation):
-            logging.info("Moving %s from old DL location to new one..." % self.mangatitle)
-            helper.createFolder(newlocation)
-            move(oldlocation, newlocation)
 
 
         # Get image urls!
