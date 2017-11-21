@@ -43,14 +43,11 @@ def downloader(config, args):
             move(oldlocation, newlocation)
 
 
-        logging.debug("Processing %s..."% current_chapter.mangatitle)
-
 
         # Check if chapter needs to be downloaded
         if helper.verifyDownload(config, chapter):
             logging.debug("Manga %s downloaded already!" % current_chapter.mangatitle)
         else:
-
 
             # Check if Download loop & Download task is selected
             if not args.start:

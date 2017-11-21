@@ -58,7 +58,7 @@ class Downloader:
 
     def data_processor(self):
 
-        logging.debug("Proccesing data for %s"% self.mangatitle)
+        logging.info("Proccesing data for %s"% self.mangatitle)
 
 
         # Get image urls!
