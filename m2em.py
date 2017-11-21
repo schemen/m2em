@@ -10,7 +10,7 @@ import validators
 # Start of the fun!
 import bin.m2emHelper as helper
 import bin.m2emRssParser as mparser
-import bin.m2emDownloader as mdownloader
+import bin.m2emDownloaderHandler as mdownloader
 import bin.m2emConverter as mconverter
 import bin.m2emSender as msender
 
@@ -29,6 +29,7 @@ class M2em:
         self.args = None
         if not self.args:
             self.read_arguments()
+
 
         # Load config right at the start
         self.config = None
@@ -57,6 +58,8 @@ class M2em:
                                 action="store_true")
         parser.add_argument("-cd", "--create-db", help="Creates DB. Uses Configfile for Naming",
                                 action="store_true")
+        parser.add_argument("-s", "--start", help="Starts one loop",
+                                action="store_true")
         parser.add_argument("-a", "--action", help="Start action. Options are: rss (collecting feed data), downloader, converter or sender ")
         parser.add_argument("-ss", "--switch-send", help="Pass ID of User. Switches said user Send eBook status")
         parser.add_argument("-sc", "--switch-chapter", help="Pass ID of Chapter. Switches said Chapter Sent status")
@@ -77,6 +80,24 @@ class M2em:
         helper.initialize_logger("log/", outputlevel)
 
 
+        # Check if Arguments are passed or not. At least one is required
+        if self.args.action is None \
+            and self.args.add_feed is None \
+            and self.args.delete_chapter is None \
+            and self.args.delete_feed is None \
+            and self.args.delete_user is None \
+            and self.args.switch_chapter is None \
+            and self.args.switch_send is None \
+            and self.args.add_user is False \
+            and not any([self.args.add_user,
+                            self.args.create_db,
+                            self.args.daemon,
+                            self.args.list_chapters,
+                            self.args.list_chapters_all,
+                            self.args.list_feeds,
+                            self.args.list_users,
+                            self.args.start,]):
+            logging.error("At least one argument is required!")
 
     #Read Config
     def read_config(self):
@@ -182,6 +203,31 @@ class M2em:
         helper.createDB(self.config)
         pass
 
+    '''
+    Catch -a / --action
+    '''
+    def start_action(self):
+
+        # Start downloader
+        if self.args.action == "downloader":
+            logging.info("Starting downloader to get all outstanding chapters")
+            self.images_fetcher()
+            logging.info("Finished downloading all outstanding chapters.")
+
+
+        elif self.args.action == "rssparser":
+            logging.info("Action '%s' is not yet implemented." % self.args.action)
+
+        elif self.args.action == "converter":
+            logging.info("Action '%s' is not yet implemented." % self.args.action)
+
+        elif self.args.action == "sender":
+            logging.info("Action '%s' is not yet implemented." % self.args.action)
+
+        else:
+            logging.info("%s is not a valid action. Choose between  'rssparser', 'downloader', 'converter' or 'sender'"% self.args.action)
+        pass
+
 
 
 
@@ -194,7 +240,7 @@ class M2em:
 
     # Worker to fetch all images
     def images_fetcher(self):
-        mdownloader.LoopDownloader(self.config)
+        mdownloader.downloader(self.config, self.args)
 
     # Worker to convert all downloaded chapters into ebooks
     def image_converter(self):
@@ -263,34 +309,39 @@ class M2em:
             self.create_db()
             return
 
+        if self.args.action:
+            self.start_action()
+            return
 
         # Mainloop
-        loop = True
-        while loop:
-            if not self.args.daemon:
-                loop = False
+        if self.args.start:
+            daemon = True
+            while daemon:
+                if not self.args.daemon:
+                    daemon = False
+                logging.info("#########################")
+                logging.info("Starting Loop at %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                logging.info("Don't forget that the loop only handles data younger than 24h Hours!")
 
-            logging.info("Starting Loop at %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                logging.info("Starting RSS Data Fetcher!")
+                self.parse_add_feeds()
+                logging.info("Finished Loading RSS Data")
 
-            logging.info("Starting RSS Data Fetcher!")
-            self.parse_add_feeds()
-            logging.info("Finished Loading RSS Data")
+                logging.info("Starting all outstanding Chapter Downloads!")
+                self.images_fetcher()
+                logging.info("Finished all outstanding Chapter Downloads")
 
-            logging.info("Starting all outstanding Chapter Downloads!")
-            self.images_fetcher()
-            logging.info("Finished all outstanding Chapter Downloads")
+                logging.info("Starting recursive image conversion!")
+                self.image_converter()
+                logging.info("Finished recursive image conversion!")
 
-            logging.info("Starting recursive image conversion!")
-            self.image_converter()
-            logging.info("Finished recursive image conversion!")
+                logging.info("Starting to send all ebooks!")
+                self.send_ebooks()
+                logging.info("Finished sending ebooks!")
 
-            logging.info("Starting to send all ebooks!")
-            self.send_ebooks()
-            logging.info("Finished sending ebooks!")
-
-            if loop:
-                logging.info("Sleeping for %s seconds...\n" % (self.config["Sleep"]))
-                time.sleep(int(self.config["Sleep"]))
+                if daemon:
+                    logging.info("Sleeping for %s seconds...\n" % (self.config["Sleep"]))
+                    time.sleep(int(self.config["Sleep"]))
 
 # Execute Main
 if __name__ == '__main__':
