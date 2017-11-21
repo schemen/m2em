@@ -1,24 +1,19 @@
 import logging
 import os
-import requests
 from shutil import move
 import bin.m2emHelper as helper
-import bin.sourceparser.m2emMangastream as msparser
-import bin.sourceparser.m2emMangafox as mxparser
 from bin.m2emDownloader import Downloader
-from PIL import Image
-from PIL import ImageOps
-from PIL import ImageFilter
-
 
 
 '''
-Loop downloader
+downloadHandler
 '''
 def downloader(config, args):
     
     # Load configs required here
     database = config["Database"]
+
+
 
     # Load Chapters from Database
     chapters = helper.getChapters(database)
@@ -29,12 +24,15 @@ def downloader(config, args):
     if args.start:
         logging.debug("The loop will only consider Chapters younger than 24h!")
 
+
+
     # Start Download loop!
     for chapter in chapters:
 
-        
+        # Initialize Downloader class & load basic params
         current_chapter = Downloader()
         current_chapter.data_collector(config,chapter)
+
 
         # Check if the old DL location is being used and fix it!
         oldlocation = str(current_chapter.saveloc + current_chapter.mangatitle)
@@ -44,19 +42,22 @@ def downloader(config, args):
             helper.createFolder(newlocation)
             move(oldlocation, newlocation)
 
+
         logging.debug("Processing %s..."% current_chapter.mangatitle)
+
+
         # Check if chapter needs to be downloaded
         if helper.verifyDownload(config, chapter):
             logging.debug("Manga %s downloaded already!" % current_chapter.mangatitle)
         else:
-            
-            # Start Tasks!
+
+
             # Check if Download loop & Download task is selected
             if not args.start:
                 current_chapter.data_processor()
                 current_chapter.downloader()
             else:
-                    
+
                 # Only start run if chapter is younger than 24h
                 if  helper.checkTime(current_chapter.chapterdate):
                     current_chapter.data_processor()
