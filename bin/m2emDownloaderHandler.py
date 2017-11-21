@@ -8,18 +8,19 @@ from bin.m2emDownloader import Downloader
 '''
 downloadHandler
 '''
-def downloader(config, args):
+def downloader(config, args, chapterids=[]):
     
     # Load configs required here
     database = config["Database"]
 
 
 
-    # Load Chapters from Database
-    chapters = helper.getChapters(database)
-    logging.debug("Loaded Chapers:")
-    for i in chapters:
-        logging.debug(i)
+    if not chapterids:
+        # Load Chapters from Database
+        chapters = helper.getChapters(database)
+    else:
+        # TODO Create helper function to extract chapters out of chapter IDs
+        pass
 
     if args.start:
         logging.debug("The loop will only consider Chapters younger than 24h!")

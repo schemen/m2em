@@ -11,7 +11,7 @@ import validators
 import bin.m2emHelper as helper
 import bin.m2emRssParser as mparser
 import bin.m2emDownloaderHandler as mdownloader
-import bin.m2emConverter as mconverter
+import bin.m2emConverterHandler as mconverter
 import bin.m2emSender as msender
 
 #logging.basicConfig(format='%(message)s', level=logging.DEBUG)
@@ -203,6 +203,7 @@ class M2em:
         helper.createDB(self.config)
         pass
 
+
     '''
     Catch -a / --action
     '''
@@ -215,14 +216,20 @@ class M2em:
             logging.info("Finished downloading all outstanding chapters.")
 
 
+
         elif self.args.action == "rssparser":
             logging.info("Action '%s' is not yet implemented." % self.args.action)
 
+
         elif self.args.action == "converter":
-            logging.info("Action '%s' is not yet implemented." % self.args.action)
+            logging.info("Starting converter to convert all outstanding chapters")
+            self.image_converter()
+            logging.info("Finished converting all remaining chapters!")
+
 
         elif self.args.action == "sender":
             logging.info("Action '%s' is not yet implemented." % self.args.action)
+
 
         else:
             logging.info("%s is not a valid action. Choose between  'rssparser', 'downloader', 'converter' or 'sender'"% self.args.action)
@@ -240,11 +247,11 @@ class M2em:
 
     # Worker to fetch all images
     def images_fetcher(self):
-        mdownloader.downloader(self.config, self.args)
+        mdownloader.downloader(self.config, self.args, chapterids=[])
 
     # Worker to convert all downloaded chapters into ebooks
     def image_converter(self):
-        mconverter.RecursiveConverter(self.config)
+        mconverter.ConverterHandler(self.config, self.args, chapterids=[])
 
     # Worker to convert all downloaded chapters into ebooks
     def send_ebooks(self):
