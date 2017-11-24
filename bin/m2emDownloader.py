@@ -63,7 +63,7 @@ class Downloader:
 
         # Get image urls!
         # Mangastream Parser
-        if self.origin == "mangastream.com":
+        if self.origin == "mangastream.com" or self.origin == "readms.net":
             urllist = msparser.getPagesUrl(self.mangastarturl,self.mangapages)
 
 

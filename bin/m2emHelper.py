@@ -722,7 +722,7 @@ def getMangaData(url,entry):
 
     mangadata=[]
     # Mangastream Parser
-    if origin == "mangastream.com":
+    if origin == "mangastream.com" or origin == "readms.net":
 
         logging.debug("Getting Mangadata from Mangastream.com for %s" % url)
 
