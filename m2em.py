@@ -61,7 +61,7 @@ class M2em:
                                 action="store_true")
         parser.add_argument("-s", "--start", help="Starts one loop",
                                 action="store_true")
-        parser.add_argument("--send", help="Sends Chapter directly by chapter ID. Multiple IDs can be given", nargs = '*',)
+        parser.add_argument("--send", help="Sends Chapter directly by chapter ID. Multiple IDs can be given", default=[], nargs = '*',)
         parser.add_argument("--convert", help="Converts Chapter directly by chapter ID. Multiple IDs can be given", default=[], nargs = '*',)
         parser.add_argument("--download", help="Downloads Chapter directly by chapter ID. Multiple IDs can be given", default=[], nargs = '*',)
         parser.add_argument("-a", "--action", help="Start action. Options are: rssparser (collecting feed data), downloader, converter or sender ")
@@ -94,9 +94,6 @@ class M2em:
             and self.args.delete_user is None \
             and self.args.switch_chapter is None \
             and self.args.switch_send is None \
-            and self.args.send is None \
-            and self.args.download is None \
-            and self.args.convert is None \
             and self.args.add_user is False \
             and not any([self.args.add_user,
                             self.args.create_db,
@@ -105,6 +102,9 @@ class M2em:
                             self.args.list_chapters_all,
                             self.args.list_feeds,
                             self.args.list_users,
+                            self.args.download,
+                            self.args.convert,
+                            self.args.send,
                             self.args.start,]):
             logging.error("At least one argument is required!")
 
