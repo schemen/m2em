@@ -7,6 +7,7 @@ import argparse
 import configparser
 import datetime
 import validators
+from bin._version import __version__
 # Start of the fun!
 import bin.m2emHelper as helper
 import bin.m2emRssParser as mparser
@@ -63,7 +64,7 @@ class M2em:
         parser.add_argument("--send", help="Sends Chapter directly by chapter ID. Multiple IDs can be given", nargs = '*',)
         parser.add_argument("--convert", help="Converts Chapter directly by chapter ID. Multiple IDs can be given", default=[], nargs = '*',)
         parser.add_argument("--download", help="Downloads Chapter directly by chapter ID. Multiple IDs can be given", default=[], nargs = '*',)
-        parser.add_argument("-a", "--action", help="Start action. Options are: rss (collecting feed data), downloader, converter or sender ")
+        parser.add_argument("-a", "--action", help="Start action. Options are: rssparser (collecting feed data), downloader, converter or sender ")
         parser.add_argument("-ss", "--switch-send", help="Pass ID of User. Switches said user Send eBook status")
         parser.add_argument("-sc", "--switch-chapter", help="Pass ID of Chapter. Switches said Chapter Sent status")
         parser.add_argument("-dc", "--delete-chapter", help="Pass ID of Chapter. Deletes said Chapter")
@@ -73,6 +74,8 @@ class M2em:
                                 action="store_true")
         parser.add_argument("-d", "--debug", help="Debug Mode",
                                 action="store_true")
+        parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+
         self.args = parser.parse_args()
 
         # Logging
