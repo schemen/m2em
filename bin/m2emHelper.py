@@ -720,6 +720,7 @@ def getMangaData(url,entry):
     # Get source of to decide which parser to use
     origin = getSourceURL(url)
 
+    mangadata=[]
     # Mangastream Parser
     if origin == "mangastream.com":
 
@@ -767,7 +768,7 @@ def getMangaData(url,entry):
 
 
     else:
-        pass
+        logging.error("Not supportet origin!")
 
     # Return mangadata
     return mangadata
