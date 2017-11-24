@@ -46,7 +46,29 @@ As a concept, M2em has different workers that run in a loop. All Chapter/user da
 * Converter - Converting images into ebooks
 * Sender - Compiling & Sending Emails to users and marking them as SENT
 
-With the sourceparser you can add support of a Webhost.
+
+### The Loop Run & Daemon Loop Run
+If you start m2em in loop mode (with or without --daemon) it will only consider any action with elements that that are
+younger than 24h hours.
+
+The use of that is having it running on the server 24/7, waiting for updates from the feeds and ONLY handling said updates.
+
+### Direct action
+You can start a part of the loop without the restriction of 24h. Use the -a (--action) command with either element you wish to start.
+
+Example: if you wish to download all chapters you have saved in your database, you start the download action.
+```
+./m2em.py --action downloader
+```
+### Chapter action
+You can directly apply an action to one chapter with the options --download, --convert or --send. You need to pass
+the ID of said chapter, you can find that out with "-Lc" or "-lc".
+You can pass multiple IDs.
+Example:
+```
+./m2em.py --download 100 #Downloads chapter with ID 100
+```
+
 
 ## Supported Websites
 * Mangastream
@@ -56,10 +78,11 @@ With the sourceparser you can add support of a Webhost.
 
 ### Help output:
 ```
-usage: m2em.py [-h] [-af ADD_FEED] [-au] [-lc] [-Lc] [-lf] [-lu] [-cd] [-a]
-               [-s] [-ss SWITCH_SEND] [-sc SWITCH_CHAPTER]
-               [-dc DELETE_CHAPTER] [-du DELETE_USER] [-df DELETE_FEED]
-               [--daemon] [-d]
+usage: m2em.py [-h] [-af ADD_FEED] [-au] [-lc] [-Lc] [-lf] [-lu] [-cd] [-s]
+               [--send [SEND [SEND ...]]] [--convert [CONVERT [CONVERT ...]]]
+               [--download [DOWNLOAD [DOWNLOAD ...]]] [-a ACTION]
+               [-ss SWITCH_SEND] [-sc SWITCH_CHAPTER] [-dc DELETE_CHAPTER]
+               [-du DELETE_USER] [-df DELETE_FEED] [--daemon] [-d] [-v]
 
 Manga to eManga - m2em
 
@@ -75,10 +98,19 @@ optional arguments:
   -lf, --list-feeds     Lists all feeds
   -lu, --list-users     Lists all Users
   -cd, --create-db      Creates DB. Uses Configfile for Naming
-  -a, --action          Start action. Options are: rss (collecting feed data),
-                        downloader, converter or sender
-  -s, --start           Start a single loop. If no arguments are passed, a
-                        single loop will also start
+  -s, --start           Starts one loop
+  --send [SEND [SEND ...]]
+                        Sends Chapter directly by chapter ID. Multiple IDs can
+                        be given
+  --convert [CONVERT [CONVERT ...]]
+                        Converts Chapter directly by chapter ID. Multiple IDs
+                        can be given
+  --download [DOWNLOAD [DOWNLOAD ...]]
+                        Downloads Chapter directly by chapter ID. Multiple IDs
+                        can be given
+  -a ACTION, --action ACTION
+                        Start action. Options are: rssparser (collecting feed
+                        data), downloader, converter or sender
   -ss SWITCH_SEND, --switch-send SWITCH_SEND
                         Pass ID of User. Switches said user Send eBook status
   -sc SWITCH_CHAPTER, --switch-chapter SWITCH_CHAPTER
@@ -91,6 +123,8 @@ optional arguments:
                         Pass ID of Feed. Deletes said Feed
   --daemon              Run as daemon
   -d, --debug           Debug Mode
+  -v, --version         show program's version number and exit
+
 ```
 
 ## Initial Data
@@ -132,13 +166,20 @@ ServerStartSSL = True
 
 To start a single run through the workers, you can simply execute the main program:
 ```
-./m2em.py
+./m2em.py -s
 ```
 
-If you wish to run the program as a daemon, start it with the option "--daemon". It will re-run at the config "Sleep" in second.
+If you wish to run the program as a daemon, start it with the option "--daemon" as well. It will re-run at the config "Sleep" in second.
 ```
-./m2em.py --daemon
+./m2em.py -s --daemon
 ```
+
+If you wish to disable/enable sending status of a user, use the -ss command
+```
+./m2em.py -ss <USERID>
+```
+
+
 
 ### A complete run with nothing happening:
 ```
@@ -159,7 +200,6 @@ Finished sending ebooks!
 Everything else should be self-explanatory with the "-h" option.
 
 ## Known Issues
-* There is a huge data load in the beginning. It is recommended to only activate sending of Emails after one complete run
 * MangaFox has issues with SSL Verification on some systems. For now, Simply add the http feed.
 
 Please Open an issue if you find anything!
