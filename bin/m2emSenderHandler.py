@@ -8,17 +8,12 @@ try:
 except ImportError:
     from io import StringIO
 
-def SenderHandler(config, args, chapterids=[]):
+def SenderHandler(config, args,):
     # Load configs required here
     database    = config["Database"]
 
 
-    if not chapterids:
-        # Load Chapters from Database
-        chapters = helper.getChapters(database)
-    else:
-        # TODO Create helper function to extract chapters out of chapter IDs
-        pass
+    chapters = helper.getChapters(database)
 
     # Load Users
     users    = helper.getUsers(database)
@@ -60,3 +55,42 @@ def SenderHandler(config, args, chapterids=[]):
                         current_sender.send_eb()
                     else:
                         logging.debug("%s is older than 24h, will not be processed by daemon." % current_sender.mangatitle)
+
+
+def directSender(config, chapterids=[]):
+
+    logging.debug("Following Chapters are directly sent:")
+    logging.debug(chapterids)
+
+    # Load configs required here
+    database    = config["Database"]
+
+
+    chapters = helper.getChaptersFromID(database, chapterids)
+
+    # Load Users
+    users    = helper.getUsers(database)
+
+    # Debug Users:
+    logging.debug("Userlist:")
+    logging.debug(users)
+
+
+    if not chapters:
+        logging.error("No Chapters found with said ID!")
+    else:
+        # Start conversion loop!
+        for chapter in chapters:
+
+            # Initiate Sender class and fill it with data
+            current_sender = Sender()
+            current_sender.data_collector(config, chapter)
+            current_sender.database = database
+            current_sender.users = users
+
+            # Check if ebook has been converted yet, else skip
+            if not os.path.exists(current_sender.eblocation):
+                logging.debug("Manga %s has not been converted yet." % current_sender.mangatitle)
+            else:
+                logging.info("Sending %s..." % current_sender.mangatitle)
+                current_sender.send_eb()

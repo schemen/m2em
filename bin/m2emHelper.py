@@ -668,6 +668,38 @@ def getChapters(database):
 
 
 
+'''
+Function that gets chapters from IDs and returns it
+Returns: __chapterdata
+'''
+def getChaptersFromID(database, chapterids):
+
+    # Open Database
+    try:
+        conn = sqlite3.connect(database)
+    except Exception as e:
+        print("Could not connect to DB %s" % e)
+
+    c = conn.cursor()
+    logging.debug("Succesfully Connected to DB %s" % database)
+
+    __chapterdata = []
+
+    for i in chapterids:
+        # Get Data
+        __data = c.execute("SELECT * FROM chapter where chapterid=(?)", (i,))
+        __chapterdata = __chapterdata + __data.fetchall()
+
+    logging.debug("Passed chapters:")
+    logging.debug(__chapterdata)
+    return __chapterdata
+
+
+
+
+
+
+
 
 
 '''

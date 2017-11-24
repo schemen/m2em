@@ -60,6 +60,9 @@ class M2em:
                                 action="store_true")
         parser.add_argument("-s", "--start", help="Starts one loop",
                                 action="store_true")
+        parser.add_argument("--send", help="Sends Chapter directly by chapter ID. Multiple IDs can be given", nargs = '*',)
+        parser.add_argument("--convert", help="Converts Chapter directly by chapter ID. Multiple IDs can be given", default=[], nargs = '*',)
+        parser.add_argument("--download", help="Downloads Chapter directly by chapter ID. Multiple IDs can be given", default=[], nargs = '*',)
         parser.add_argument("-a", "--action", help="Start action. Options are: rss (collecting feed data), downloader, converter or sender ")
         parser.add_argument("-ss", "--switch-send", help="Pass ID of User. Switches said user Send eBook status")
         parser.add_argument("-sc", "--switch-chapter", help="Pass ID of Chapter. Switches said Chapter Sent status")
@@ -88,6 +91,9 @@ class M2em:
             and self.args.delete_user is None \
             and self.args.switch_chapter is None \
             and self.args.switch_send is None \
+            and self.args.send is None \
+            and self.args.download is None \
+            and self.args.convert is None \
             and self.args.add_user is False \
             and not any([self.args.add_user,
                             self.args.create_db,
@@ -238,6 +244,24 @@ class M2em:
 
 
 
+    '''
+    direct callers
+    '''
+    def send_chapter(self):
+        msender.directSender(self.config, self.args.send)
+        pass
+
+
+    def convert_chapter(self):
+        mconverter.directConverter(self.config, self.args.convert)
+        pass
+
+
+    def download_chapter(self):
+        mdownloader.directDownloader(self.config, self.args.download)
+        pass
+
+
 
     '''
     This are the worker, one round
@@ -248,15 +272,15 @@ class M2em:
 
     # Worker to fetch all images
     def images_fetcher(self):
-        mdownloader.downloader(self.config, self.args, chapterids=[])
+        mdownloader.downloader(self.config, self.args)
 
     # Worker to convert all downloaded chapters into ebooks
     def image_converter(self):
-        mconverter.ConverterHandler(self.config, self.args, chapterids=[])
+        mconverter.ConverterHandler(self.config, self.args)
 
     # Worker to convert all downloaded chapters into ebooks
     def send_ebooks(self):
-        msender.SenderHandler(self.config, self.args, chapterids=[])
+        msender.SenderHandler(self.config, self.args)
 
 
 
@@ -320,6 +344,19 @@ class M2em:
         if self.args.action:
             self.start_action()
             return
+
+        if self.args.send:
+            self.send_chapter()
+            return
+
+        if self.args.download:
+            self.download_chapter()
+            return
+
+        if self.args.convert:
+            self.convert_chapter()
+            return
+
 
         # Mainloop
         if self.args.start:
