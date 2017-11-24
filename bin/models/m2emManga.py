@@ -21,9 +21,6 @@ class Manga:
         self.duplicated = None
 
 
-    #def __repr__(self):
-    #    return '<Manga: %s - %s>' % (self.manga_name, self.chapter)
-
     def load_from_feed(self, entry, parent_feed):
         self.chapter_link = entry.link
 

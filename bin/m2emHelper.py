@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import logging
+import shutil
+import datetime
 import os
 import sqlite3
 import texttable
@@ -666,6 +668,38 @@ def getChapters(database):
 
 
 
+'''
+Function that gets chapters from IDs and returns it
+Returns: __chapterdata
+'''
+def getChaptersFromID(database, chapterids):
+
+    # Open Database
+    try:
+        conn = sqlite3.connect(database)
+    except Exception as e:
+        print("Could not connect to DB %s" % e)
+
+    c = conn.cursor()
+    logging.debug("Succesfully Connected to DB %s" % database)
+
+    __chapterdata = []
+
+    for i in chapterids:
+        # Get Data
+        __data = c.execute("SELECT * FROM chapter where chapterid=(?)", (i,))
+        __chapterdata = __chapterdata + __data.fetchall()
+
+    logging.debug("Passed chapters:")
+    logging.debug(__chapterdata)
+    return __chapterdata
+
+
+
+
+
+
+
 
 
 '''
@@ -718,9 +752,9 @@ def getMangaData(url,entry):
     # Get source of to decide which parser to use
     origin = getSourceURL(url)
 
-    print(origin)
+    mangadata=[]
     # Mangastream Parser
-    if origin == "mangastream.com":
+    if origin == "mangastream.com" or origin == "readms.net":
 
         logging.debug("Getting Mangadata from Mangastream.com for %s" % url)
 
@@ -766,7 +800,7 @@ def getMangaData(url,entry):
 
 
     else:
-        pass
+        logging.error("Not supportet origin!")
 
     # Return mangadata
     return mangadata
@@ -794,3 +828,114 @@ def sanetizeName(name):
         return name
     else:
         return name
+
+
+
+
+'''
+Check if time is older than 24h
+Returns: true or false
+'''
+def checkTime(time):
+    objecttime = datetime.datetime.strptime(time, "%a, %d %b %Y %H:%M:%S %z")
+    now = datetime.datetime.now(datetime.timezone.utc)
+
+    delta = now - objecttime
+
+    if delta.days == 0:
+        return True
+    else:
+        return False
+
+
+
+'''
+Verify if chapter has been downloaded
+Returns: true or false
+'''
+def verifyDownload(config, chapter):
+
+    saveloc = config["SaveLocation"]
+    mangapages = chapter[9]
+    mangatitle = chapter[2]
+    manganame = chapter[11]
+
+    # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
+    mangatitle = sanetizeName(mangatitle)
+    manganame = sanetizeName(manganame)
+
+    downloadfolder = str(saveloc + manganame + "/" + mangatitle + "/images")
+
+    if not os.path.exists(downloadfolder):
+        return False
+    else:
+        # First check checks if there is the right amount of files in the folder
+        if len(os.listdir(downloadfolder)) != int(mangapages):
+            shutil.rmtree(downloadfolder)
+            return False
+        else:
+            # second check checks if there is an unfinished download
+            for item in os.listdir(downloadfolder):
+
+                if item.endswith(".tmp"):
+                    logging.debug("%s seems to be corrupted, removing all images for redownload"% mangatitle)
+                    shutil.rmtree(downloadfolder)
+                    return False
+            return True
+
+
+
+
+
+
+'''
+
+Init Logging!
+
+'''
+def initialize_logger(output_dir, outputlevel):
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+     
+    # create console handler and set level to info
+    handler = logging.StreamHandler()
+    if outputlevel == "debug":
+        handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter("%(levelname)s: %(message)s")
+    else:
+        handler.setLevel(logging.INFO)
+        formatter = logging.Formatter("%(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    if not os.path.isdir(output_dir):
+        createFolder(output_dir)
+
+
+    # create error file handler and set level to error
+    handler = logging.FileHandler(os.path.join(output_dir, "error.log"), encoding=None, delay="true")
+    handler.setLevel(logging.ERROR)
+    formatter = logging.Formatter("%(asctime)s; %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+ 
+    # create debug file handler and set level to debug
+    handler = logging.FileHandler(os.path.join(output_dir, "debug.log"))
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(asctime)s; %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+      # create debug file handler and set level to debug - per run 1 file
+    handler = logging.FileHandler(os.path.join(output_dir, "run.log"), "w")
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(asctime)s; %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+      # create debug file handler and set level to info
+    handler = logging.FileHandler(os.path.join(output_dir, "m2em.log"))
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(asctime)s; %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)

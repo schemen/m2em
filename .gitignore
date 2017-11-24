@@ -8,3 +8,4 @@ kindlegen.exe
 .idea
 venv
 main.db
+log/*
