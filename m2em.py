@@ -49,6 +49,7 @@ class M2em:
         parser.add_argument("-af", "--add-feed", help="Add RSS Feed of Manga. Only Mangastream & MangaFox are supported")
         parser.add_argument("-au", "--add-user", help="Adds new user",
                                 action="store_true")
+        parser.add_argument("-lm", "--list-manga", help="Lists Manga saved in database. If a Manga is passed, lists chapters to said Manga",nargs="?",const='all')                       
         parser.add_argument("-lc", "--list-chapters", help="Lists the last 10 Chapters",
                                 action="store_true")
         parser.add_argument("-Lc", "--list-chapters-all", help="Lists all Chapters",
@@ -95,6 +96,7 @@ class M2em:
             and self.args.switch_chapter is None \
             and self.args.switch_send is None \
             and self.args.add_user is False \
+            and self.args.list_manga is None \
             and not any([self.args.add_user,
                             self.args.create_db,
                             self.args.daemon,
@@ -107,6 +109,8 @@ class M2em:
                             self.args.send,
                             self.args.start,]):
             logging.error("At least one argument is required!")
+        
+        logging.debug("Passed arguments: \n %s"% self.args)
 
     #Read Config
     def read_config(self):
@@ -187,6 +191,15 @@ class M2em:
     def list_chapters(self):
         helper.printChapters(self.config)
         pass
+
+
+    '''    
+    Catch -lm/--list-manga
+    '''
+    def list_manga(self):
+        helper.printManga(self.config,self.args)
+        pass
+
 
 
     '''    
@@ -310,6 +323,10 @@ class M2em:
 
         if self.args.list_chapters:
             self.list_chapters()
+            return
+
+        if self.args.list_manga:
+            self.list_manga()
             return
 
         if self.args.add_user:

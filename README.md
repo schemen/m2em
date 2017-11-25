@@ -78,8 +78,9 @@ Example:
 
 ### Help output:
 ```
-usage: m2em.py [-h] [-af ADD_FEED] [-au] [-lc] [-Lc] [-lf] [-lu] [-cd] [-s]
-               [--send [SEND [SEND ...]]] [--convert [CONVERT [CONVERT ...]]]
+usage: m2em.py [-h] [-af ADD_FEED] [-au] [-lm [LIST_MANGA]] [-lc] [-Lc] [-lf]
+               [-lu] [-cd] [-s] [--send [SEND [SEND ...]]]
+               [--convert [CONVERT [CONVERT ...]]]
                [--download [DOWNLOAD [DOWNLOAD ...]]] [-a ACTION]
                [-ss SWITCH_SEND] [-sc SWITCH_CHAPTER] [-dc DELETE_CHAPTER]
                [-du DELETE_USER] [-df DELETE_FEED] [--daemon] [-d] [-v]
@@ -92,6 +93,9 @@ optional arguments:
                         Add RSS Feed of Manga. Only Mangastream & MangaFox are
                         supported
   -au, --add-user       Adds new user
+  -lm [LIST_MANGA], --list-manga [LIST_MANGA]
+                        Lists Manga saved in database. If a Manga is passed,
+                        lists chapters to said Manga
   -lc, --list-chapters  Lists the last 10 Chapters
   -Lc, --list-chapters-all
                         Lists all Chapters
@@ -162,6 +166,25 @@ EmailAdressPw = yourpassword
 ServerStartSSL = True
 ```
 
+## Examples
+
+If you want to check out the manga that are in the database:
+```
+./m2em.py -lm
+```
+You can use this out put to refine the search! 
+If you pass the manga name you get all chapters listed from that manga:
+```
+./m2em.py -lm "Shokugeki no Souma"
+Listing all chapters of Shokugeki no Souma:
+ID          MANGA          CHAPTER      CHAPTERNAME               RSS ORIGIN            SEND STATUS
+===================================================================================================
+112   Shokugeki no Souma   240       Not Cute             https://mangastream.com/rss   SENT
+
+91    Shokugeki no Souma   238       The Queen's Tart     https://mangastream.com/rss   SENT
+
+78    Shokugeki no Souma   239       Her Fighting Style   https://mangastream.com/rss   SENT
+```
 
 
 To start a single run through the workers, you can simply execute the main program:
