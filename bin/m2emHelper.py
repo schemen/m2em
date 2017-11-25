@@ -939,3 +939,69 @@ def initialize_logger(output_dir, outputlevel):
     formatter = logging.Formatter("%(asctime)s; %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+
+
+
+'''
+Function that gets feed data and display it nicely
+Returns: N/A
+'''
+def printManga(config, args):
+
+
+    # Get database config
+    database = config["Database"]
+
+    # Open Database
+    try:
+        conn = sqlite3.connect(database)
+    except Exception as e:
+        print("Could not connect to DB %s" % e)
+
+    c = conn.cursor()
+    logging.debug("Succesfully Connected to DB %s" % database)
+
+
+
+    if args.list_manga == "all":
+        # Get Data
+        __data = c.execute("SELECT manganame FROM chapter")
+        __tabledata = set(__data.fetchall())
+
+
+        if __tabledata:
+            logging.info("Mangas with chapters in the database:")
+            for i in __tabledata:
+                logging.info("* %s"% i)
+    else:
+        __data = c.execute("SELECT * FROM chapter where manganame=(?)", (args.list_manga,))
+        __tabledata = __data.fetchall()
+
+        if len(__tabledata) == 0:
+            logging.error("No Manga with that Name found!")
+        else:
+            # Reverse List to get newest first
+            __tabledata.reverse()
+
+            table = texttable.Texttable(max_width=120)
+            table.set_deco(texttable.Texttable.HEADER)
+            table.set_cols_align(["l", "l", "l", "l", "l", "l"])
+            table.set_cols_dtype(['i',  # int
+                                't',
+                                't',
+                                't',
+                                't',
+                                't'])  # text
+            table.header (["ID", "MANGA", "CHAPTER", "CHAPTERNAME", "RSS ORIGIN", "SEND STATUS"])
+
+
+            logging.info("Listing all chapters of %s:"% args.list_manga)
+            for row in __tabledata:
+                # Rename row[8]
+                if row[8] == 1:
+                    sendstatus = "SENT"
+                else:
+                    sendstatus = "NOT SENT"
+                table.add_row([row[0], row[11], row[10], row[5]+"\n", str(row[1]), sendstatus])
+            logging.info(table.draw())
+
