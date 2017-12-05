@@ -75,6 +75,7 @@ class Sender:
         for user in self.users:
             kindle_mail = user[3]
             shouldsend  = user[4]
+            user_mail   = user[2]
 
             # Check if user wants Mails
             if shouldsend == "True":
@@ -126,15 +127,45 @@ class Sender:
                     #server.sendmail(emailadress, kindle_mail, msg.as_string())
                     server.sendmail(self.emailadress, kindle_mail, msg)
                     server.close()
-                    logging.debug("Sent email to %s "% kindle_mail)
+                    logging.debug("Sent Ebook email to %s "% kindle_mail)
+                    self.send_confirmation(user_mail)
                 except smtplib.SMTPException as e:
                     logging.debug("Could not send email! %s" % e)
-
 
         # Set Email as Sent
         helper.setIsSent(self.mangaid,self.database)
         logging.info("Sent %s to all requested users."% self.mangatitle)
 
 
+    def send_confirmation(self,usermail):
 
+        # Compile Email
+        msg = MIMEMultipart()
+        msg['Subject'] = 'Ebook Delivery of %s' % self.mangatitle
+        msg['Date'] = formatdate(localtime=True)
+        msg['From'] = self.emailadress
+        msg['To'] = usermail
+        msg['Message-ID'] = make_msgid()
+
+        text = '%s has been delivered to your Kindle Email!' % self.mangatitle
+        msg.attach(MIMEText(text))
+
+        # Convert message to string
+        sio = StringIO()
+        gen = Generator(sio, mangle_from_=False)
+        gen.flatten(msg)
+        msg = sio.getvalue()
+
+        try:
+            server = smtplib.SMTP(self.smtpserver, self.serverport, )
+            if self.starttls:
+                server.starttls()
+            server.ehlo()
+            server.login(self.emailadress, self.password)
+            server.sendmail(self.emailadress, usermail, msg)
+            server.close()
+            logging.debug("Sent confirmation email to %s " % usermail)
+        except smtplib.SMTPException as e:
+            logging.debug("Could not send email! %s" % e)
+        pass
 
