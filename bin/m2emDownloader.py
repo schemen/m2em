@@ -75,7 +75,7 @@ class Downloader:
 
 
         # Mangafox Parser
-        elif self.origin == "mangafox.me":
+        elif self.origin == "mangafox.me" or self.origin == "mangafox.la":
             urllist = mxparser.getPagesUrl(self.mangastarturl,self.mangapages)
 
 
@@ -121,7 +121,7 @@ class Downloader:
                 #   https://github.com/aplanas/kmanga/blob/master/mobi/mobi.py#L416
                 #   Thanks a lot to Alberto Planas for coming up with it!
                 #
-                if self.origin == "mangafox.me":
+                if self.origin == "mangafox.me" or self.origin == "mangafox.la":
                     logging.debug("Cleaning Mangafox Footer")
                     img = Image.open(imagepath)
                     _img = ImageOps.invert(img.convert(mode='L'))

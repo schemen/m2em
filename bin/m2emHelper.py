@@ -777,7 +777,7 @@ def getMangaData(url,entry):
         mangadata = [manganame, pages, chapter, title, chapter_name, chapter_pubDate]
 
     # Mangafox Parser
-    elif origin == "mangafox.me":
+    elif origin == "mangafox.me" or origin == "mangafox.la":
         logging.debug("Getting Mangadata from Mangafox.me for %s" % url)
 
         # Easy Stuff
