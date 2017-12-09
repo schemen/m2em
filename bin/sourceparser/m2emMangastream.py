@@ -40,7 +40,7 @@ def getPages(page):
     soup = BeautifulSoup(page.content, 'html.parser')
 
     #Get Manga Titel
-    var1 = soup.body.findAll(text=re.compile("Last Page \((..)\)"))
+    var1 = soup.body.findAll(text=re.compile("Last Page \((.*)\)"))
     pages = int(var1[0][11:-1])
     return pages
 

@@ -38,7 +38,7 @@ def getChapterName(page):
     soup = BeautifulSoup(page.content, 'html.parser')
 
     #Get Manga Titel
-    search = re.search(': (.*?) at MangaFox.me"', str(soup))
+    search = re.search(': (.*?) at MangaFox', str(soup))
     chaptername = search.group(1)
     return chaptername
 
