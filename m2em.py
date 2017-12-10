@@ -274,7 +274,8 @@ class M2em:
 
 
     def download_chapter(self):
-        mdownloader.directDownloader(self.config, self.args.download)
+        downloader = mdownloader.DownloadHandler(self.config, self.args)
+        downloader.directDownloader(self.args.download)
         pass
 
 
@@ -288,7 +289,9 @@ class M2em:
 
     # Worker to fetch all images
     def images_fetcher(self):
-        mdownloader.downloader(self.config, self.args)
+        downloader = mdownloader.DownloadHandler(self.config, self.args)
+        downloader.downloader()
+        #mdownloader.downloader(self.config, self.args)
 
     # Worker to convert all downloaded chapters into ebooks
     def image_converter(self):
