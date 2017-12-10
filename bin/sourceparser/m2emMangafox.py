@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import logging
 import re
+import time
 import requests
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
@@ -103,7 +104,14 @@ Returns: urllist
 '''
 def getImageUrl(pageurl):
     # Download Page
-    page = requests.get(pageurl)
+    retry = True
+    while retry:
+
+        page = requests.get(pageurl)
+        if page:
+            retry = False
+        else:
+            time.sleep(0.5)
 
     #Pass page to parser
     soup = BeautifulSoup(page.content, 'html.parser')
