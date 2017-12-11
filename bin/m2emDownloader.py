@@ -1,6 +1,7 @@
 import logging
 import os
 import requests
+from time import sleep
 from shutil import move
 import bin.m2emHelper as helper
 import bin.sourceparser.m2emMangastream as msparser
@@ -107,9 +108,19 @@ class Downloader:
                 tempdl = self.downloadfolder + "/" + str("{0:0=3d}".format(counter)) + ".tmp"
 
                 # Download the image!
-                f = open(tempdl, 'wb')
-                f.write(requests.get(image).content)
-                f.close()
+                checker = True
+                while checker:
+                    f = open(tempdl, 'wb')
+                    f.write(requests.get(image).content)
+                    f.close()
+                    try:
+                        Image.open(tempdl)
+                    except Exception:
+                        checker = True
+                        logging.debug("Failed to download image %s, redownloading..."% tempdl)
+                        sleep(0.5)
+                    else:
+                        checker = False
 
                 # If everything is alright, write image to final name
                 os.rename(tempdl, imagepath)
