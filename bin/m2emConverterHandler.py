@@ -5,9 +5,10 @@ from bin.m2emConverter import Converter
 
 
 def ConverterHandler(config, args):
+    """ Function that handles the Converter in a loop """
 
     # Load configs required here
-    database  = config["Database"]
+    database = config["Database"]
 
     # Load Chapters!
     chapters = helper.getChapters(database)
@@ -20,13 +21,13 @@ def ConverterHandler(config, args):
 
         # Verify if chapter has been downloaded already
         if not helper.verifyDownload(config, chapter):
-            logging.debug("Manga %s has not been downloaded!" % chapter[2])
+            logging.debug("Manga %s has not been downloaded!", chapter[2])
         else:
 
 
             # Spawn an Converter Object & get basic data from database & config
             current_conversation = Converter()
-            current_conversation.data_collector(config,chapter)
+            current_conversation.data_collector(config, chapter)
 
             # Check if Download loop & Download task is selected
             if not args.start:
@@ -39,18 +40,20 @@ def ConverterHandler(config, args):
                     current_conversation.cbz_creator()
                     current_conversation.eb_creator()
                 else:
-                    logging.debug("%s is older than 24h, will not be processed by daemon." % current_conversation.mangatitle)
+                    logging.debug("%s is older than 24h, will not be processed by daemon.",
+                                  current_conversation.mangatitle)
 
 
 
 
 def directConverter(config, chapterids=[]):
+    """ Function that handles direct calls of the Converter """
 
     logging.debug("Following Chapters are directly converted:")
     logging.debug(chapterids)
 
     # Load configs required here
-    database    = config["Database"]
+    database = config["Database"]
 
 
     chapters = helper.getChaptersFromID(database, chapterids)
@@ -64,23 +67,27 @@ def directConverter(config, chapterids=[]):
 
             # Verify if chapter has been downloaded already
             if not helper.verifyDownload(config, chapter):
-                logging.info("Manga %s has not been downloaded!" % chapter[2])
+                logging.info("Manga %s has not been downloaded!", chapter[2])
             else:
 
 
                 # Spawn an Converter Object & get basic data from database & config
                 current_conversation = Converter()
-                current_conversation.data_collector(config,chapter)
+                current_conversation.data_collector(config, chapter)
 
                 if os.path.exists(current_conversation.cbzlocation):
-                    logging.info("Manga %s converted to CBZ already!" % current_conversation.mangatitle)
+                    logging.info("Manga %s converted to CBZ already!",
+                                 current_conversation.mangatitle)
                 else:
-                    logging.info("Starting conversion to CBZ of %s..." % current_conversation.mangatitle)
+                    logging.info("Starting conversion to CBZ of %s...",
+                                 current_conversation.mangatitle)
                     current_conversation.cbz_creator()
 
                 # Start conversion to Ebook format!
                 if os.path.exists(current_conversation.eblocation):
-                    logging.info("Manga %s converted to Ebook already!" % current_conversation.mangatitle)
+                    logging.info("Manga %s converted to Ebook already!",
+                                 current_conversation.mangatitle)
                 else:
-                    logging.info("Starting conversion to Ebook of %s..." % current_conversation.mangatitle)
+                    logging.info("Starting conversion to Ebook of %s...",
+                                 current_conversation.mangatitle)
                     current_conversation.eb_creator()
