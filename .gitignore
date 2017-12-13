@@ -2,6 +2,7 @@
 .vscode
 test\ Kopie.db
 _test.db
+test.db
 __pycache__
 comic/*
 kindlegen.exe

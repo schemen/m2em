@@ -8,6 +8,7 @@ import texttable
 import requests
 import validators
 from urllib.parse import urlparse
+from M2emModelsBackup import *
 import bin.sourceparser.m2emMangastream as msparser
 import bin.sourceparser.m2emMangafox as mxparser
 
@@ -176,23 +177,12 @@ def printUsers(config):
 
 
     # Get database config
-    database = config["Database"]
+    #database = config["Database"]
 
+    # Open DB & get data
+    database.connect()
 
-
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as fail:
-        logging.error("Could not connect to DB %s", fail)
-
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s", database)
-
-
-    # Get Data
-    __data = c.execute("SELECT * FROM user")
-    __tabledata = __data.fetchall()
+    
 
     table = texttable.Texttable()
     table.set_deco(texttable.Texttable.HEADER)
