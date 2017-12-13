@@ -42,9 +42,12 @@ class Converter:
 
 
         # create folder variables
-        self.imagefolder = str(self.saveloc + self.manganame + "/" + self.mangatitle + "/images/")
-        self.eblocation = str(self.saveloc + self.manganame + "/"+ self.mangatitle + "/" + self.mangatitle + "." + self.ebformat.lower())
-        self.cbzlocation = str(self.saveloc + self.manganame + "/"+ self.mangatitle + "/" + self.mangatitle + ".cbz")
+        self.imagefolder = str(self.saveloc + self.manganame + "/" +
+                               self.mangatitle + "/images/")
+        self.eblocation = str(self.saveloc + self.manganame + "/"+
+                              self.mangatitle + "/" + self.mangatitle + "." + self.ebformat.lower())
+        self.cbzlocation = str(self.saveloc + self.manganame + "/"+
+                               self.mangatitle + "/" + self.mangatitle + ".cbz")
 
 
 
@@ -87,6 +90,7 @@ class Converter:
             logging.info("Starting conversion to Ebook of %s...", self.mangatitle)
 
             try:
-                subprocess.call(["kcc-c2e", "-p", self.ebprofile, "-f", self.ebformat, "-m", "-q", "-r", "2", "-u", "-s", self.cbzlocation])
+                subprocess.call(["kcc-c2e", "-p", self.ebprofile, "-f", self.ebformat,
+                                 "-m", "-q", "-r", "2", "-u", "-s", self.cbzlocation])
             except Exception as fail:
                 logging.debug("Failed to convert epub %s", fail)

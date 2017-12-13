@@ -19,7 +19,33 @@ import bin.sourceparser.m2emMangafox as mxparser
 
 '''
 
+'''
+Function that connects you to the database
+'''
+def connect_db(config):
 
+    # get database name
+    database = config["Database"]
+
+    # Open Database
+    try:
+        conn = sqlite3.connect(database)
+    except Exception as fail:
+        logging.error("Could not connect to DB %s", fail)
+
+    logging.debug("Succesfully Connected to DB %s", database)
+
+    return conn
+
+'''
+Function that connects you to the database
+'''
+def db_cursor(connection):
+
+    executor = connection.cursor()
+    logging.debug("Opened database executor")
+
+    return executor
 
 '''
 Create Database!
@@ -30,7 +56,7 @@ def createDB(config):
     database = config["Database"]
 
     # Table Data
-    sql_table_chapters  = """CREATE TABLE IF NOT EXISTS chapter (
+    sql_table_chapters = """CREATE TABLE IF NOT EXISTS chapter (
                             chapterid	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                             origin	TEXT,
                             title	TEXT NOT NULL,
@@ -45,14 +71,14 @@ def createDB(config):
                             manganame	TEXT);"""
 
 
-    sql_table_users     = """CREATE TABLE IF NOT EXISTS user (
+    sql_table_users = """CREATE TABLE IF NOT EXISTS user (
                             userid	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                             Name	TEXT NOT NULL,
                             Email	TEXT,
                             kindle_mail	TEXT,
                             sendToKindle	INTEGER DEFAULT 0);"""
 
-    sql_table_feeds     = """CREATE TABLE IF NOT EXISTS feeds (
+    sql_table_feeds = """CREATE TABLE IF NOT EXISTS feeds (
                             feedid	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                             url	TEXT NOT NULL);"""
 
@@ -64,11 +90,11 @@ def createDB(config):
         c.execute(sql_table_chapters)
         c.execute(sql_table_users)
         c.execute(sql_table_feeds)
-    except Exception as e:
-        logging.info(e)
+    except Exception as fail:
+        logging.info(fail)
     finally:
         conn.close()
-        logging.info("Created database %s" % database)
+        logging.info("Created database %s", database)
 
 '''
 Function set manga as sent
@@ -78,22 +104,20 @@ def setIsSent(mangaid, database):
     # Open Database
     try:
         conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+    except Exception as fail:
+        print("Could not connect to DB %s", fail)
 
     c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
+    logging.debug("Succesfully Connected to DB %s", database)
 
     # Insert Data
     try:
         c.execute("update chapter set issent=1 where chapterid=(?)", (mangaid,))
         conn.commit()
-        logging.debug("Set chapter with ID %s as sent" % mangaid)
-    except Exception as e:
-        logging.debug("Failed to save feed into database: %s" % e)
+        logging.debug("Set chapter with ID %s as sent", mangaid)
+    except Exception as fail:
+        logging.debug("Failed to save feed into database: %s", fail)
     conn.close
-
-
 
 
 
@@ -102,30 +126,20 @@ def setIsSent(mangaid, database):
 Function write a feed into the DB
 Returns: N/A
 '''
-def writeFeed(url,config):
+def writeFeed(url, config):
 
+    # Connect to DB
+    conn = connect_db(config)
+    c = db_cursor(conn)
 
-    # Get database config
-    database = config["Database"]
-
-
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
-
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
     # Insert Data
     try:
         c.execute("INSERT INTO feeds (url) VALUES (?)", (url,))
         conn.commit()
-        logging.info("Succesfully added \"%s\" to the List of RSS Feeds" % url)
-    except Exception as e:
-        logging.info("Failed to save feed into database: %s" % e)
-    conn.close
-
+        logging.info("Succesfully added \"%s\" to the List of RSS Feeds", url)
+    except Exception as fail:
+        logging.info("Failed to save feed into database: %s", fail)
+    conn.close()
 
 
 
@@ -135,36 +149,22 @@ Returns: N/A
 '''
 def printFeeds(config):
 
-
-    # Get database config
-    database = config["Database"]
-
-
-
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
-
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
+    # Connect to DB
+    conn = connect_db(config)
+    c = db_cursor(conn)
 
     # Get Data
     __data = c.execute("SELECT * FROM feeds")
     __tabledata = __data.fetchall()
+    conn.close()
 
     table = texttable.Texttable()
     table.set_deco(texttable.Texttable.HEADER)
     table.set_cols_dtype(['i',  # int
                           't',])  # text
-    table.header (["ID", "URL"])
-    table.add_rows(__tabledata,header=False)
+    table.header(["ID", "URL"])
+    table.add_rows(__tabledata, header=False)
     logging.info(table.draw())
-
-
-
 
 
 
@@ -183,11 +183,11 @@ def printUsers(config):
     # Open Database
     try:
         conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+    except Exception as fail:
+        logging.error("Could not connect to DB %s", fail)
 
     c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
+    logging.debug("Succesfully Connected to DB %s", database)
 
 
     # Get Data
@@ -201,13 +201,9 @@ def printUsers(config):
                           't',
                           't',
                           't'])  # text
-    table.header (["ID", "USERNAME", "EMAIL", "KINDLE EMAIL", "SEND EBOOK"])
-    table.add_rows(__tabledata,header=False)
+    table.header(["ID", "USERNAME", "EMAIL", "KINDLE EMAIL", "SEND EBOOK"])
+    table.add_rows(__tabledata, header=False)
     logging.info(table.draw())
-
-
-
-
 
 
 
@@ -226,11 +222,11 @@ def printChaptersAll(config):
     # Open Database
     try:
         conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+    except Exception as fail:
+        logging.error("Could not connect to DB %s", fail)
 
     c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
+    logging.debug("Succesfully Connected to DB %s", database)
 
 
     # Get Data
@@ -264,9 +260,6 @@ def printChaptersAll(config):
 
 
 
-
-
-
 '''
 Function that creates user in an interactive shell
 Returns: N/A
@@ -275,7 +268,7 @@ def createUser(config):
 
     # Start interactive Shell!
     while True:
-        username     = input("Enter User Name: ")
+        username = input("Enter User Name: ")
         if validators.truthy(username):
             break
         else:
@@ -325,18 +318,18 @@ def createUser(config):
     # Open Database
     try:
         conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+    except Exception as fail:
+        logging.error("Could not connect to DB %s", fail)
 
     c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
+    logging.debug("Succesfully Connected to DB %s", database)
     # Insert Data
     try:
-        c.execute("INSERT INTO user (Name, Email, kindle_mail, sendToKindle) VALUES (?,?,?,?)", (username,email,kindlemail,sendToKindle))
+        c.execute("INSERT INTO user (Name, Email, kindle_mail, sendToKindle) VALUES (?,?,?,?)", (username, email, kindlemail, sendToKindle))
         conn.commit()
         print("Succesfully added \"%s\" to User" % username)
-    except Exception as e:
-        logging.info("Failed to save user into database: %s" % e)
+    except Exception as fail:
+        logging.info("Failed to save user into database: %s", fail)
     conn.close
 
 
@@ -344,7 +337,7 @@ def createUser(config):
 '''
 Switch User Config sendToKindle from True to False and False to True
 '''
-def switchUserSend(userid,config):
+def switchUserSend(userid, config):
 
     # Get database config
     database = config["Database"]
@@ -353,11 +346,11 @@ def switchUserSend(userid,config):
     # Open Database
     try:
         conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+    except Exception as fail:
+        logging.error("Could not connect to DB %s", fail)
 
     c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
+    logging.debug("Succesfully Connected to DB %s", database)
 
     # Get User
     __data = c.execute("select * from user where userid=(?)", (userid))
@@ -375,7 +368,7 @@ def switchUserSend(userid,config):
                 conn.commit()
                 logging.info("Disabled Ebook sending on user %s" % __userdata[1])
             except Exception as e:
-                logging.debug("Failed to user status: %s" % e)
+                logging.debug("Failed to user status: %s", e)
             conn.close
         else:
             # Insert Data
@@ -386,7 +379,6 @@ def switchUserSend(userid,config):
             except Exception as e:
                 logging.debug("Failed to user status: %s" % e)
             conn.close
-
 
 
 
@@ -465,10 +457,6 @@ def deleteChapter(chapterid, config):
 
 
 
-
-
-
-
 '''
 Delete Feed!
 '''
@@ -505,13 +493,10 @@ def deleteFeed(feedid, config):
     c.close()
 
 
-
-
-
 '''
 Switch Chapter Config issent from True to False and False to True
 '''
-def switchChapterSend(chapterid,config):
+def switchChapterSend(chapterid, config):
 
     # Get database config
     database = config["Database"]
@@ -528,7 +513,7 @@ def switchChapterSend(chapterid,config):
 
     # Get User
     __data = c.execute("select * from chapter where chapterid=(?)", (chapterid,))
-    __chapterdata=__data.fetchone()
+    __chapterdata = __data.fetchone()
 
 
     if __chapterdata == None:
@@ -553,9 +538,6 @@ def switchChapterSend(chapterid,config):
             except Exception as e:
                 logging.debug("Failed to update status: %s" % e)
             conn.close
-
-
-
 
 
 
@@ -600,7 +582,7 @@ def printChapters(config):
                           't',
                           't',
                           't'])  # text
-    table.header (["ID", "MANGA", "CHAPTER", "CHAPTERNAME", "RSS ORIGIN", "SEND STATUS"])
+    table.header(["ID", "MANGA", "CHAPTER", "CHAPTERNAME", "RSS ORIGIN", "SEND STATUS"])
 
     logging.info("Listing the last 10 chapters:")
     for row in __cuttabledata:
@@ -612,7 +594,6 @@ def printChapters(config):
         table.add_row([row[0], row[11], row[10], row[5]+"\n", str(row[1]), sendstatus])
 
     logging.info(table.draw())
-
 
 
 
@@ -640,8 +621,6 @@ def getFeeds(database):
 
 
 
-
-
 '''
 Function that gets chapters and returns it
 Returns: __chapterdata
@@ -663,8 +642,6 @@ def getChapters(database):
     __chapterdata = __data.fetchall()
 
     return __chapterdata
-
-
 
 
 
@@ -696,12 +673,6 @@ def getChaptersFromID(database, chapterids):
 
 
 
-
-
-
-
-
-
 '''
 Function that gets chapters and returns it
 Returns: __userdata
@@ -726,9 +697,6 @@ def getUsers(database):
 
 
 
-
-
-
 '''
 Function to decide sourceparser (Mangafox or Mangastream as of now)
 Returns: SourceURL
@@ -740,19 +708,16 @@ def getSourceURL(url):
 
 
 
-
-
-
 '''
 Function that gets Manga Data from Chapter URL
 Returns: mangadata (array)
 '''
-def getMangaData(url,entry):
+def getMangaData(url, entry):
 
     # Get source of to decide which parser to use
     origin = getSourceURL(url)
 
-    mangadata=[]
+    mangadata = []
     # Mangastream Parser
     if origin == "mangastream.com" or origin == "readms.net":
 
@@ -768,9 +733,9 @@ def getMangaData(url,entry):
         page = requests.get(url)
 
         # Getting the data
-        manganame   = msparser.getTitle(page)
-        pages       = msparser.getPages(page)
-        chapter     = msparser.getChapter(url)
+        manganame = msparser.getTitle(page)
+        pages = msparser.getPages(page)
+        chapter = msparser.getChapter(url)
 
         logging.debug("Mangadata succesfully loaded")
 
@@ -789,9 +754,9 @@ def getMangaData(url,entry):
         page = requests.get(url)
 
         # Getting the data
-        manganame    = mxparser.getTitle(page)
-        pages        = mxparser.getPages(page)
-        chapter      = mxparser.getChapter(url)
+        manganame = mxparser.getTitle(page)
+        pages = mxparser.getPages(page)
+        chapter = mxparser.getChapter(url)
         chapter_name = mxparser.getChapterName(page)
 
         logging.debug("Mangadata succesfully loaded")
@@ -804,7 +769,6 @@ def getMangaData(url,entry):
 
     # Return mangadata
     return mangadata
-
 
 
 
@@ -885,9 +849,6 @@ def verifyDownload(config, chapter):
 
 
 
-
-
-
 '''
 
 Init Logging!
@@ -896,7 +857,7 @@ Init Logging!
 def initialize_logger(output_dir, outputlevel):
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
-     
+
     # create console handler and set level to info
     handler = logging.StreamHandler()
     if outputlevel == "debug":
@@ -918,7 +879,7 @@ def initialize_logger(output_dir, outputlevel):
     formatter = logging.Formatter("%(asctime)s; %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
- 
+
     # create debug file handler and set level to debug
     handler = logging.FileHandler(os.path.join(output_dir, "debug.log"))
     handler.setLevel(logging.DEBUG)
@@ -987,11 +948,11 @@ def printManga(config, args):
             table.set_deco(texttable.Texttable.HEADER)
             table.set_cols_align(["l", "l", "l", "l", "l", "l"])
             table.set_cols_dtype(['i',  # int
-                                't',
-                                't',
-                                't',
-                                't',
-                                't'])  # text
+                                  't',
+                                  't',
+                                  't',
+                                  't',
+                                  't'])  # text
             table.header (["ID", "MANGA", "CHAPTER", "CHAPTERNAME", "RSS ORIGIN", "SEND STATUS"])
 
 
@@ -1004,4 +965,3 @@ def printManga(config, args):
                     sendstatus = "NOT SENT"
                 table.add_row([row[0], row[11], row[10], row[5]+"\n", str(row[1]), sendstatus])
             logging.info(table.draw())
-

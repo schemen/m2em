@@ -16,71 +16,78 @@ except ImportError:
 
 
 class Sender:
+    """ Class that takes care of sending the ebooks to the users! """
 
     def __init__(self):
-        self.saveloc        = None
-        self.ebformat       = None
-        self.mangatitle     = None
-        self.manganame      = None
-        self.eblocation     = None
-        self.chapterdate    = None
-        self.smtpserver     = None
-        self.serverport     = None
-        self.emailadress    = None
-        self.password       = None
-        self.starttls       = None
-        self.mangaid        = None
-        self.issent         = None
-        self.chapterdate    = None
+        self.saveloc = None
+        self.ebformat = None
+        self.mangatitle = None
+        self.manganame = None
+        self.eblocation = None
+        self.chapterdate = None
+        self.smtpserver = None
+        self.serverport = None
+        self.emailadress = None
+        self.password = None
+        self.starttls = None
+        self.mangaid = None
+        self.issent = None
+        self.chapterdate = None
 
         # Will be defined by handler
-        self.users          = None
-        self.database       = None
+        self.users = None
+        self.database = None
 
 
 
     def data_collector(self, config, chapter):
+        """ Method that gathers data required for this class """
+
         # Load configs required here
-        self.saveloc     = config["SaveLocation"]
-        self.ebformat    = config["EbookFormat"]
-        self.smtpserver  = config["SMTPServer"]
-        self.serverport  = config["ServerPort"]
+        self.saveloc = config["SaveLocation"]
+        self.ebformat = config["EbookFormat"]
+        self.smtpserver = config["SMTPServer"]
+        self.serverport = config["ServerPort"]
         self.emailadress = config["EmailAdress"]
-        self.password    = config["EmailAdressPw"]
-        self.starttls    = config["ServerStartSSL"]
+        self.password = config["EmailAdressPw"]
+        self.starttls = config["ServerStartSSL"]
 
 
         # get relevant data of this Manga
-        self.mangatitle   = chapter[2]
-        self.chapterdate  = chapter[3]
-        self.mangaid      = int(chapter[0])
-        self.issent       = int(chapter[8])
-        self.manganame    = chapter[11]
+        self.mangatitle = chapter[2]
+        self.chapterdate = chapter[3]
+        self.mangaid = int(chapter[0])
+        self.issent = int(chapter[8])
+        self.manganame = chapter[11]
 
         # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
         self.mangatitle = helper.sanetizeName(self.mangatitle)
         self.manganame = helper.sanetizeName(self.manganame)
 
 
-        self.eblocation   = str(self.saveloc + self.manganame + "/" + self.mangatitle + "/" + self.mangatitle + "." + self.ebformat.lower())
+        self.eblocation = str(self.saveloc + self.manganame + "/" + self.mangatitle + "/" +
+                              self.mangatitle + "." + self.ebformat.lower())
 
+        # Initialize emtpy Users table
+        self.users = []
 
 
 
 
 
     def send_eb(self):
+        """ Method that sends data to the user! """
 
         # Iterate through user
         for user in self.users:
             kindle_mail = user[3]
-            shouldsend  = user[4]
-            user_mail   = user[2]
+            shouldsend = user[4]
+            user_mail = user[2]
 
             # Check if user wants Mails
             if shouldsend == "True":
 
-                logging.debug("Compiling Email for %s" % user[1])
+                logging.debug("Compiling Email for %s", user[1])
 
 
                 # Compile Email
@@ -98,12 +105,13 @@ class Sender:
                 # Add Ebook as attachment
                 ebfile = open(self.eblocation, 'rb')
 
-                attachment = MIMEBase('application', 'octet-stream', name=os.path.basename(self.eblocation))
+                attachment = MIMEBase('application', 'octet-stream',
+                                      name=os.path.basename(self.eblocation))
                 attachment.set_payload(ebfile.read())
                 ebfile.close()
                 encoders.encode_base64(attachment)
                 attachment.add_header('Content-Disposition', 'attachment',
-                              filename=os.path.basename(self.eblocation))
+                                      filename=os.path.basename(self.eblocation))
 
                 msg.attach(attachment)
 
@@ -115,29 +123,30 @@ class Sender:
 
                 # Send Email Off!
                 # Debug Server Data
-                logging.debug("Server: %s" % self.smtpserver)
-                logging.debug("Port: %s" % self.serverport)
+                logging.debug("Server: %s", self.smtpserver)
+                logging.debug("Port: %s", self.serverport)
 
                 try:
-                    server = smtplib.SMTP(self.smtpserver,self.serverport,)
+                    server = smtplib.SMTP(self.smtpserver, self.serverport,)
                     if self.starttls:
                         server.starttls()
                     server.ehlo()
-                    server.login(self.emailadress,self.password)
+                    server.login(self.emailadress, self.password)
                     #server.sendmail(emailadress, kindle_mail, msg.as_string())
                     server.sendmail(self.emailadress, kindle_mail, msg)
                     server.close()
-                    logging.debug("Sent Ebook email to %s "% kindle_mail)
+                    logging.debug("Sent Ebook email to %s ", kindle_mail)
                     self.send_confirmation(user_mail)
-                except smtplib.SMTPException as e:
-                    logging.debug("Could not send email! %s" % e)
+                except smtplib.SMTPException as fail:
+                    logging.debug("Could not send email! %s", fail)
 
         # Set Email as Sent
-        helper.setIsSent(self.mangaid,self.database)
-        logging.info("Sent %s to all requested users."% self.mangatitle)
+        helper.setIsSent(self.mangaid, self.database)
+        logging.info("Sent %s to all requested users.", self.mangatitle)
 
 
-    def send_confirmation(self,usermail):
+    def send_confirmation(self, usermail):
+        """ Method to send a confirmation mail to the user """
 
         # Compile Email
         msg = MIMEMultipart()
@@ -164,8 +173,6 @@ class Sender:
             server.login(self.emailadress, self.password)
             server.sendmail(self.emailadress, usermail, msg)
             server.close()
-            logging.debug("Sent confirmation email to %s " % usermail)
-        except smtplib.SMTPException as e:
-            logging.debug("Could not send email! %s" % e)
-        pass
-
+            logging.debug("Sent confirmation email to %s ", usermail)
+        except smtplib.SMTPException as fail:
+            logging.debug("Could not send email! %s", fail)
