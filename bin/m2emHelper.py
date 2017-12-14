@@ -8,7 +8,7 @@ import texttable
 import requests
 import validators
 from urllib.parse import urlparse
-from M2emModelsBackup import *
+from bin.M2emModelsBackup import *
 import bin.sourceparser.m2emMangastream as msparser
 import bin.sourceparser.m2emMangafox as mxparser
 
@@ -20,33 +20,8 @@ import bin.sourceparser.m2emMangafox as mxparser
 
 '''
 
-'''
-Function that connects you to the database
-'''
-def connect_db(config):
 
-    # get database name
-    database = config["Database"]
 
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as fail:
-        logging.error("Could not connect to DB %s", fail)
-
-    logging.debug("Succesfully Connected to DB %s", database)
-
-    return conn
-
-'''
-Function that connects you to the database
-'''
-def db_cursor(connection):
-
-    executor = connection.cursor()
-    logging.debug("Opened database executor")
-
-    return executor
 
 '''
 Create Database!
@@ -175,24 +150,17 @@ Returns: N/A
 '''
 def printUsers(config):
 
-
-    # Get database config
-    #database = config["Database"]
-
-    # Open DB & get data
-    database.connect()
-
-    
-
     table = texttable.Texttable()
     table.set_deco(texttable.Texttable.HEADER)
     table.set_cols_dtype(['i',  # int
                           't',
                           't',
                           't',
-                          't'])  # text
+                          'i'])  # text
     table.header(["ID", "USERNAME", "EMAIL", "KINDLE EMAIL", "SEND EBOOK"])
-    table.add_rows(__tabledata, header=False)
+
+    for user in User.select():
+        table.add_row([user.userid, user.name, user.email, user.kindle_mail, user.sendtokindle])
     logging.info(table.draw())
 
 

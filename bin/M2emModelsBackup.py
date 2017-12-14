@@ -1,16 +1,20 @@
 from peewee import *
+import configparser
 
-database = SqliteDatabase('test.db')
+
+config_reader = configparser.ConfigParser()
+config_reader.read("config.ini")
+config = config_reader["CONFIG"]
+
+db = SqliteDatabase(config['Database'])
 
 class BaseModel(Model):
     class Meta:
-        database = database
+        database = db
         
-        def to_dict():
-        pass
 
 class Chapter(BaseModel):
-    chapter = IntegerField(null=True)
+    chapter = TextField(null=True)
     chapterid = PrimaryKeyField()
     date = TextField(null=True)
     desc = TextField(null=True)
