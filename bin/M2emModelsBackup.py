@@ -11,7 +11,6 @@ db = SqliteDatabase(config['Database'])
 class BaseModel(Model):
     class Meta:
         database = db
-        
 
 class Chapter(BaseModel):
     chapter = TextField(null=True)
@@ -48,7 +47,7 @@ class User(BaseModel):
         db_table = 'user'
 
 def create_tables():
-    database.connect()
-    database.create_tables([User, Chapter, Feed])
+    db.connect()
+    db.create_tables([User, Chapter, Feeds])
 
 
