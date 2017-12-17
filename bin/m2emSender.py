@@ -54,11 +54,11 @@ class Sender:
 
 
         # get relevant data of this Manga
-        self.mangatitle = chapter[2]
-        self.chapterdate = chapter[3]
-        self.mangaid = int(chapter[0])
-        self.issent = int(chapter[8])
-        self.manganame = chapter[11]
+        self.mangatitle = chapter.title
+        self.chapterdate = chapter.date
+        self.mangaid = int(chapter.chapterid)
+        self.issent = int(chapter.issent)
+        self.manganame = chapter.manganame
 
         # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
         self.mangatitle = helper.sanetizeName(self.mangatitle)
@@ -80,14 +80,14 @@ class Sender:
 
         # Iterate through user
         for user in self.users:
-            kindle_mail = user[3]
-            shouldsend = user[4]
-            user_mail = user[2]
+            kindle_mail = user.kindle_mail
+            shouldsend = user.sendtokindle
+            user_mail = user.email
 
             # Check if user wants Mails
-            if shouldsend == "True":
+            if shouldsend == 1:
 
-                logging.debug("Compiling Email for %s", user[1])
+                logging.debug("Compiling Email for %s", user.name)
 
 
                 # Compile Email
@@ -141,7 +141,7 @@ class Sender:
                     logging.debug("Could not send email! %s", fail)
 
         # Set Email as Sent
-        helper.setIsSent(self.mangaid, self.database)
+        helper.setIsSent(self.mangaid)
         logging.info("Sent %s to all requested users.", self.mangatitle)
 
 

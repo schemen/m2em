@@ -13,16 +13,16 @@ from PIL import ImageFilter
 class Downloader:
 
     def __init__(self):
-        self.database        = None
-        self.saveloc         = None
-        self.mangastarturl   = None
-        self.mangapages      = None
-        self.mangatitle      = None
-        self.manganame       = None
-        self.chapterdate     = None
-        self.downloadfolder  = None
-        self.origin          = None
-        self.imageurls       = None
+        self.database = None
+        self.saveloc = None
+        self.mangastarturl = None
+        self.mangapages = None
+        self.mangatitle = None
+        self.manganame = None
+        self.chapterdate = None
+        self.downloadfolder = None
+        self.origin = None
+        self.imageurls = None
 
 
 
@@ -34,11 +34,11 @@ class Downloader:
         self.saveloc  = config["SaveLocation"]
 
         # get relevant data of this Chapter
-        self.mangastarturl   = chapter[4]
-        self.mangapages      = chapter[9]
-        self.mangatitle      = chapter[2]
-        self.manganame       = chapter[11]
-        self.chapterdate     = chapter[3]
+        self.mangastarturl   = chapter.url
+        self.mangapages      = chapter.pages
+        self.mangatitle      = chapter.title
+        self.manganame       = chapter.manganame
+        self.chapterdate     = chapter.date
 
         # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
         self.mangatitle = helper.sanetizeName(self.mangatitle)

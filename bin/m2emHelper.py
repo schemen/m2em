@@ -3,11 +3,11 @@ import logging
 import shutil
 import datetime
 import os
-import sqlite3
 import texttable
 import requests
 import validators
 from urllib.parse import urlparse
+from bin.M2emModels import *
 import bin.sourceparser.m2emMangastream as msparser
 import bin.sourceparser.m2emMangafox as mxparser
 
@@ -19,105 +19,29 @@ import bin.sourceparser.m2emMangafox as mxparser
 
 '''
 
-'''
-Function that connects you to the database
-'''
-def connect_db(config):
 
-    # get database name
-    database = config["Database"]
 
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as fail:
-        logging.error("Could not connect to DB %s", fail)
-
-    logging.debug("Succesfully Connected to DB %s", database)
-
-    return conn
-
-'''
-Function that connects you to the database
-'''
-def db_cursor(connection):
-
-    executor = connection.cursor()
-    logging.debug("Opened database executor")
-
-    return executor
 
 '''
 Create Database!
 '''
-def createDB(config):
-
-    # get database name
-    database = config["Database"]
-
-    # Table Data
-    sql_table_chapters = """CREATE TABLE IF NOT EXISTS chapter (
-                            chapterid	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                            origin	TEXT,
-                            title	TEXT NOT NULL,
-                            date	TEXT,
-                            url	TEXT NOT NULL,
-                            desc	TEXT,
-                            ispulled	INTEGER DEFAULT 0,
-                            isconverted	INTEGER DEFAULT 0,
-                            issent	INTEGER DEFAULT 0,
-                            pages	INTEGER DEFAULT 0,
-                            chapter	INTEGER DEFAULT 0,
-                            manganame	TEXT);"""
-
-
-    sql_table_users = """CREATE TABLE IF NOT EXISTS user (
-                            userid	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                            Name	TEXT NOT NULL,
-                            Email	TEXT,
-                            kindle_mail	TEXT,
-                            sendToKindle	INTEGER DEFAULT 0);"""
-
-    sql_table_feeds = """CREATE TABLE IF NOT EXISTS feeds (
-                            feedid	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                            url	TEXT NOT NULL);"""
-
-    # Create DB
-    try:
-        conn = sqlite3.connect(database)
-        logging.debug(sqlite3.version)
-        c = conn.cursor()
-        c.execute(sql_table_chapters)
-        c.execute(sql_table_users)
-        c.execute(sql_table_feeds)
-    except Exception as fail:
-        logging.info(fail)
-    finally:
-        conn.close()
-        logging.info("Created database %s", database)
+def createDB():
+    create_tables()
 
 '''
 Function set manga as sent
 Returns: N/A
 '''
-def setIsSent(mangaid, database):
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as fail:
-        print("Could not connect to DB %s", fail)
+def setIsSent(mangaid):
 
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s", database)
-
-    # Insert Data
     try:
-        c.execute("update chapter set issent=1 where chapterid=(?)", (mangaid,))
-        conn.commit()
+        # Open DB
+        db.get_conn()
+        query = Chapter.update(issent=1).where(Chapter.chapterid == mangaid)
+        query.execute()
         logging.debug("Set chapter with ID %s as sent", mangaid)
-    except Exception as fail:
+    except  Exception as fail:
         logging.debug("Failed to save feed into database: %s", fail)
-    conn.close
 
 
 
@@ -126,73 +50,48 @@ def setIsSent(mangaid, database):
 Function write a feed into the DB
 Returns: N/A
 '''
-def writeFeed(url, config):
+def writeFeed(url):
 
     # Connect to DB
-    conn = connect_db(config)
-    c = db_cursor(conn)
+    db.get_conn()
 
     # Insert Data
-    try:
-        c.execute("INSERT INTO feeds (url) VALUES (?)", (url,))
-        conn.commit()
-        logging.info("Succesfully added \"%s\" to the List of RSS Feeds", url)
-    except Exception as fail:
-        logging.info("Failed to save feed into database: %s", fail)
-    conn.close()
+    feed = Feeds.create(url=url)
+    feed.save()
+    logging.info("Succesfully added \"%s\" to the List of RSS Feeds", url)
 
-
+    # Close connection
+    db.close()
 
 '''
 Function that gets feed data and display it nicely
 Returns: N/A
 '''
-def printFeeds(config):
-
-    # Connect to DB
-    conn = connect_db(config)
-    c = db_cursor(conn)
-
-    # Get Data
-    __data = c.execute("SELECT * FROM feeds")
-    __tabledata = __data.fetchall()
-    conn.close()
+def printFeeds():
 
     table = texttable.Texttable()
     table.set_deco(texttable.Texttable.HEADER)
     table.set_cols_dtype(['i',  # int
                           't',])  # text
     table.header(["ID", "URL"])
-    table.add_rows(__tabledata, header=False)
+
+    # Connect
+    db.get_conn()
+
+    for row in Feeds.select():
+        table.add_row([row.feedid, row.url])
+
+    # Close connection
+    db.close()
+
     logging.info(table.draw())
 
-
-
+    
 '''
 Function that gets feed data and display it nicely
 Returns: N/A
 '''
-def printUsers(config):
-
-
-    # Get database config
-    database = config["Database"]
-
-
-
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as fail:
-        logging.error("Could not connect to DB %s", fail)
-
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s", database)
-
-
-    # Get Data
-    __data = c.execute("SELECT * FROM user")
-    __tabledata = __data.fetchall()
+def printUsers():
 
     table = texttable.Texttable()
     table.set_deco(texttable.Texttable.HEADER)
@@ -200,9 +99,13 @@ def printUsers(config):
                           't',
                           't',
                           't',
-                          't'])  # text
+                          'i'])  # text
     table.header(["ID", "USERNAME", "EMAIL", "KINDLE EMAIL", "SEND EBOOK"])
-    table.add_rows(__tabledata, header=False)
+
+    db.get_conn()
+    for user in User.select():
+        table.add_row([user.userid, user.name, user.email, user.kindle_mail, user.sendtokindle])
+    db.close()
     logging.info(table.draw())
 
 
@@ -211,30 +114,12 @@ def printUsers(config):
 Function that gets feed data and display it nicely
 Returns: N/A
 '''
-def printChaptersAll(config):
+def printChaptersAll():
 
-
-    # Get database config
-    database = config["Database"]
-
-
-
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as fail:
-        logging.error("Could not connect to DB %s", fail)
-
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s", database)
-
-
-    # Get Data
-    __data = c.execute("SELECT * FROM chapter")
-    __tabledata = __data.fetchall()
-
-    # Reverse List to get newest first
-    __tabledata.reverse()
+    # Make the query
+    db.get_conn()
+    chapters = Chapter.select().order_by(Chapter.chapterid)
+    db.close()
 
     table = texttable.Texttable(max_width=120)
     table.set_deco(texttable.Texttable.HEADER)
@@ -249,13 +134,13 @@ def printChaptersAll(config):
 
 
     logging.info("Listing all chapters:")
-    for row in __tabledata:
+    for row in chapters:
         # Rename row[8]
-        if row[8] == 1:
+        if row.issent == 1:
             sendstatus = "SENT"
         else:
             sendstatus = "NOT SENT"
-        table.add_row([row[0], row[11], row[10], row[5]+"\n", str(row[1]), sendstatus])
+        table.add_row([row.chapterid, row.manganame, row.chapter, row.title+"\n", str(row.origin), sendstatus])
     logging.info(table.draw())
 
 
@@ -264,7 +149,7 @@ def printChaptersAll(config):
 Function that creates user in an interactive shell
 Returns: N/A
 '''
-def createUser(config):
+def createUser():
 
     # Start interactive Shell!
     while True:
@@ -306,116 +191,75 @@ def createUser(config):
 
     # switch sendToKindle to 0 or 1
     if sendToKindle == "yes":
-        sendToKindle = "True"
+        sendToKindle = "1"
     else:
-        sendToKindle = "False"
+        sendToKindle = "0"
 
+    # Save data now!
+    db.get_conn()
+    newuser = User.create(email=email, name=username, sendtokindle=sendToKindle, kindle_mail=kindlemail)
 
-    # Get database config
-    database = config["Database"]
-
-
-    # Open Database
     try:
-        conn = sqlite3.connect(database)
-    except Exception as fail:
-        logging.error("Could not connect to DB %s", fail)
-
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s", database)
-    # Insert Data
-    try:
-        c.execute("INSERT INTO user (Name, Email, kindle_mail, sendToKindle) VALUES (?,?,?,?)", (username, email, kindlemail, sendToKindle))
-        conn.commit()
-        print("Succesfully added \"%s\" to User" % username)
-    except Exception as fail:
-        logging.info("Failed to save user into database: %s", fail)
-    conn.close
-
-
+        newuser.save()
+    except IntegrityError as fail:
+        db.rollback()
+        logging.error(fail)
+    finally:
+        logging.info("Succesfully added user %s!", username)
+    db.close()
 
 '''
 Switch User Config sendToKindle from True to False and False to True
 '''
-def switchUserSend(userid, config):
+def switchUserSend(userid):
 
-    # Get database config
-    database = config["Database"]
-
-
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as fail:
-        logging.error("Could not connect to DB %s", fail)
-
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s", database)
+    user = ""
 
     # Get User
-    __data = c.execute("select * from user where userid=(?)", (userid))
-    __userdata = __data.fetchone()
+    db.get_conn()
+    try:
+        user = User.get(User.userid == userid)
+    except DoesNotExist:
+        logging.error("User does with ID %s does not exist!", userid)
 
-
-    if __userdata == None:
-        logging.info("User with this ID does not exist!")
-    else:
-        logging.debug("User is %s" % __userdata[4])
-        if __userdata[4] == "True":
+    if user:
+        logging.debug("User is %s", user.name)
+        if user.sendtokindle == 1:
             # Insert Data
             try:
-                c.execute("update user set sendToKindle='False' where userid=(?)", (userid,))
-                conn.commit()
-                logging.info("Disabled Ebook sending on user %s" % __userdata[1])
+                user.sendtokindle = 0
+                user.save()
+                logging.info("Disabled Ebook sending on user %s", user.name)
             except Exception as e:
                 logging.debug("Failed to user status: %s", e)
-            conn.close
         else:
             # Insert Data
             try:
-                c.execute("update user set sendToKindle='True' where userid=(?)", (userid,))
-                conn.commit()
-                logging.info("Enable Ebook sending on user %s" % __userdata[1])
+                user.sendtokindle = 1
+                logging.info("Enabling Ebook sending on user %s", user.name)
+                user.save()
             except Exception as e:
-                logging.debug("Failed to user status: %s" % e)
-            conn.close
-
+                logging.debug("Failed to user status: %s", e)
+    
+    db.close()
 
 
 '''
 Delete User!
 '''
-def deleteUser(userid, config):
+def deleteUser(userid):
 
-    # Get database config
-    database = config["Database"]
+    # Get User
+    db.get_conn()
 
-
-    # Open Database
     try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+        user = User.get(User.userid == userid)
+        user.delete_instance()
+        logging.info("Deleted user %s.", user.name)
+    except DoesNotExist:
+        logging.info("User with ID %s does not exist!", userid)
 
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
-    # check if user exists
-    __data = c.execute("select * from user where userid=(?)", (userid,))
-    __userdata = __data.fetchone()
-
-    # Delete user
-    if not __userdata == None:
-        try:
-            c.execute("delete from user where userid=(?)", (userid,))
-            conn.commit()
-            logging.info("Deleted user with ID %s." % userid)
-        except Exception as e:
-            logging.info("Could not delete user! %s" % e)
-    else:
-        logging.info("User with ID %s does not exist!"% userid)
-
-    c.close()
+    db.close()
 
 
 
@@ -423,155 +267,48 @@ def deleteUser(userid, config):
 '''
 Delete Chapter!
 '''
-def deleteChapter(chapterid, config):
+def deleteChapter(chapterid):
 
-    # Get database config
-    database = config["Database"]
+    # Get Chapter
+    db.get_conn()
 
-
-    # Open Database
     try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+        chapter = Chapter.get(Chapter.chapterid == chapterid)
+        chapter.delete_instance()
+        logging.info("Deleted Chapter %s.", chapter.title)
+    except DoesNotExist:
+        logging.info("Chapter with ID %s does not exist!", chapterid)
 
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
-    # check if user exists
-    __data = c.execute("select * from chapter where chapterid=(?)", (chapterid,))
-    __chapterdata = __data.fetchone()
-
-    # Delete user
-    if not __chapterdata == None:
-        try:
-            c.execute("delete from chapter where chapterid=(?)", (chapterid,))
-            conn.commit()
-            logging.info("Deleted chapter with ID %s." % chapterid)
-        except Exception as e:
-            logging.info("Could not delete chapter! %s" % e)
-    else:
-        logging.info("Chapter with ID %s does not exist!"% chapterid)
-
-    c.close()
-
+    db.close()
 
 
 '''
 Delete Feed!
 '''
-def deleteFeed(feedid, config):
+def deleteFeed(feedid):
 
-    # Get database config
-    database = config["Database"]
+    # Get Feed
+    db.get_conn()
 
-
-    # Open Database
     try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+        feed = Feeds.get(Feeds.feedid == feedid)
+        feed.delete_instance()
+        logging.info("Deleted Feed \"%s\".", feed.url)
+    except DoesNotExist:
+        logging.info("Feed with ID %s does not exist!", feedid)
 
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
-    # check if user exists
-    __data = c.execute("select * from feeds where feedid=(?)", (feedid,))
-    __chapterdata = __data.fetchone()
-
-    # Delete user
-    if not __chapterdata == None:
-        try:
-            c.execute("delete from feeds where feedid=(?)", (feedid,))
-            conn.commit()
-            logging.info("Deleted feed with ID %s." % feedid)
-        except Exception as e:
-            logging.info("Could not delete feed! %s" % e)
-    else:
-        logging.info("Feed with ID %s does not exist!"% feedid)
-
-    c.close()
-
-
-'''
-Switch Chapter Config issent from True to False and False to True
-'''
-def switchChapterSend(chapterid, config):
-
-    # Get database config
-    database = config["Database"]
-
-
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
-
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
-    # Get User
-    __data = c.execute("select * from chapter where chapterid=(?)", (chapterid,))
-    __chapterdata = __data.fetchone()
-
-
-    if __chapterdata == None:
-        logging.info("Chapter with this ID does not exist!")
-    else:
-        logging.debug("Chapter ID is %s" % __chapterdata[8])
-        if __chapterdata[8] == 1:
-            # Insert Data
-            try:
-                c.execute("update chapter set issent=0 where chapterid=(?)", (chapterid,))
-                conn.commit()
-                logging.info("Set status of \"%s\" as Not Sent!" % __chapterdata[2])
-            except Exception as e:
-                logging.debug("Failed to update status: %s" % e)
-            conn.close
-        else:
-            # Insert Data
-            try:
-                c.execute("update chapter set issent=1 where chapterid=(?)", (chapterid,))
-                conn.commit()
-                logging.info("Set status of \"%s\" as Sent!" % __chapterdata[2])
-            except Exception as e:
-                logging.debug("Failed to update status: %s" % e)
-            conn.close
-
-
+    db.close()
 
 '''
 Function that prints the last 10 chapters
 Returns: N/A
 '''
-def printChapters(config):
+def printChapters():
 
-
-    # Get database config
-    database = config["Database"]
-
-
-
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
-
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
-
-    # Get Data
-    __data = c.execute("SELECT * FROM chapter")
-    __tabledata = __data.fetchall()
-
-    # Reverse List to get newest first
-    __tabledata.reverse()
-
-    #Cut the list down to max 10 articles
-    __cuttabledata = __tabledata[:15]
+    # Make the query
+    db.get_conn()
+    chapters = Chapter.select().order_by(-Chapter.chapterid).limit(10)
+    db.close()
 
     table = texttable.Texttable(max_width=120)
     table.set_deco(texttable.Texttable.HEADER)
@@ -585,39 +322,29 @@ def printChapters(config):
     table.header(["ID", "MANGA", "CHAPTER", "CHAPTERNAME", "RSS ORIGIN", "SEND STATUS"])
 
     logging.info("Listing the last 10 chapters:")
-    for row in __cuttabledata:
+    for row in chapters:
         # Rename row[8]
-        if row[8] == 1:
+        if row.issent == 1:
             sendstatus = "SENT"
         else:
             sendstatus = "NOT SENT"
-        table.add_row([row[0], row[11], row[10], row[5]+"\n", str(row[1]), sendstatus])
-
+        table.add_row([row.chapterid, row.manganame, row.chapter, row.title+"\n", str(row.origin), sendstatus])
     logging.info(table.draw())
 
 
 
 '''
 Function that gets feed data returns it
-Returns: tabledata
+Returns: feeds
 '''
-def getFeeds(database):
+def getFeeds():
 
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+    # Make the query
+    db.get_conn()
+    feeds = Feeds.select()
+    db.close()
 
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
-
-    # Get Data
-    __data = c.execute("SELECT * FROM feeds")
-    __tabledata = __data.fetchall()
-
-    return __tabledata
+    return feeds
 
 
 
@@ -625,51 +352,38 @@ def getFeeds(database):
 Function that gets chapters and returns it
 Returns: __chapterdata
 '''
-def getChapters(database):
+def getChapters():
 
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+    # Make the query
+    db.get_conn()
+    chapters = Chapter.select()
 
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
-
-    # Get Data
-    __data = c.execute("SELECT * FROM chapter")
-    __chapterdata = __data.fetchall()
-
-    return __chapterdata
-
+    return chapters
 
 
 '''
 Function that gets chapters from IDs and returns it
 Returns: __chapterdata
 '''
-def getChaptersFromID(database, chapterids):
+def getChaptersFromID(chapterids):
 
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
 
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
-    __chapterdata = []
+    chapterdata = []
+    db.get_conn()
 
     for i in chapterids:
         # Get Data
-        __data = c.execute("SELECT * FROM chapter where chapterid=(?)", (i,))
-        __chapterdata = __chapterdata + __data.fetchall()
+        try:
+            chapter = Chapter.select().where(Chapter.chapterid == i).get()
+            chapterdata.append(chapter)
+        except DoesNotExist:
+            logging.error("Chapter with ID %s does not exist!", i)
+            
 
     logging.debug("Passed chapters:")
-    logging.debug(__chapterdata)
-    return __chapterdata
+    for i in chapterdata:
+        logging.debug(i.title)
+    return chapterdata
 
 
 
@@ -677,23 +391,13 @@ def getChaptersFromID(database, chapterids):
 Function that gets chapters and returns it
 Returns: __userdata
 '''
-def getUsers(database):
+def getUsers():
 
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+    # Make the query
+    db.get_conn()
+    users = User.select()
 
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
-
-    # Get Data
-    __data = c.execute("SELECT * FROM user")
-    __userdata = __data.fetchall()
-
-    return __userdata
+    return users
 
 
 
@@ -820,9 +524,9 @@ Returns: true or false
 def verifyDownload(config, chapter):
 
     saveloc = config["SaveLocation"]
-    mangapages = chapter[9]
-    mangatitle = chapter[2]
-    manganame = chapter[11]
+    mangapages = chapter.pages
+    mangatitle = chapter.title
+    manganame = chapter.manganame
 
     # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
     mangatitle = sanetizeName(mangatitle)
@@ -907,42 +611,31 @@ def initialize_logger(output_dir, outputlevel):
 Function that gets feed data and display it nicely
 Returns: N/A
 '''
-def printManga(config, args):
-
-
-    # Get database config
-    database = config["Database"]
-
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
-
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
+def printManga(args):
 
 
     if args.list_manga == "all":
+
+        workdata = []
         # Get Data
-        __data = c.execute("SELECT manganame FROM chapter")
-        __tabledata = set(__data.fetchall())
+        data = Chapter.select(Chapter.manganame)
+        for i in data:
+            workdata.append(i.manganame)
+        tabledata = set(workdata)
 
 
-        if __tabledata:
+        if tabledata:
             logging.info("Mangas with chapters in the database:")
-            for i in __tabledata:
+            for i in tabledata:
                 logging.info("* %s"% i)
     else:
-        __data = c.execute("SELECT * FROM chapter where manganame=(?)", (args.list_manga,))
-        __tabledata = __data.fetchall()
+        data = Chapter.select().where(Chapter.manganame == args.list_manga)
 
-        if len(__tabledata) == 0:
+        if not data:
             logging.error("No Manga with that Name found!")
         else:
             # Reverse List to get newest first
-            __tabledata.reverse()
+            #__tabledata.reverse()
 
             table = texttable.Texttable(max_width=120)
             table.set_deco(texttable.Texttable.HEADER)
@@ -957,11 +650,11 @@ def printManga(config, args):
 
 
             logging.info("Listing all chapters of %s:"% args.list_manga)
-            for row in __tabledata:
+            for row in data:
                 # Rename row[8]
-                if row[8] == 1:
+                if row.issent == 1:
                     sendstatus = "SENT"
                 else:
                     sendstatus = "NOT SENT"
-                table.add_row([row[0], row[11], row[10], row[5]+"\n", str(row[1]), sendstatus])
+                table.add_row([row.chapterid, row.manganame, row.chapter, row.desc+"\n", str(row.origin), sendstatus])
             logging.info(table.draw())

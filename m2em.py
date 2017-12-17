@@ -15,8 +15,6 @@ import bin.m2emDownloaderHandler as mdownloader
 import bin.m2emConverterHandler as mconverter
 import bin.m2emSenderHandler as msender
 
-#logging.basicConfig(format='%(message)s', level=logging.DEBUG)
-
 class M2em:
     """ Main Class """
 
@@ -40,7 +38,7 @@ class M2em:
 
         # Check if Database exists, else create
         if not os.path.isfile(self.config["Database"]):
-            helper.createDB(self.config)
+            helper.createDB()
 
 
     def read_arguments(self):
@@ -80,8 +78,6 @@ class M2em:
                             help="Start action. Options are: rssparser (collecting feed data), downloader, converter or sender ")
         parser.add_argument("-ss", "--switch-send",
                             help="Pass ID of User. Switches said user Send eBook status")
-        parser.add_argument("-sc", "--switch-chapter",
-                            help="Pass ID of Chapter. Switches said Chapter Sent status")
         parser.add_argument("-dc", "--delete-chapter",
                             help="Pass ID of Chapter. Deletes said Chapter")
         parser.add_argument("-du", "--delete-user",
@@ -111,7 +107,6 @@ class M2em:
             and self.args.delete_chapter is None \
             and self.args.delete_feed is None \
             and self.args.delete_user is None \
-            and self.args.switch_chapter is None \
             and self.args.switch_send is None \
             and self.args.add_user is False \
             and self.args.list_manga is None \
@@ -150,7 +145,7 @@ class M2em:
     def save_feed_to_db(self):
         logging.debug("Entered URL: %s", self.args.add_feed)
         if validators.url(self.args.add_feed):
-            helper.writeFeed(self.args.add_feed, self.config)
+            helper.writeFeed(self.args.add_feed)
         else:
             logging.error("You need to enter an URL!")
 
@@ -160,16 +155,7 @@ class M2em:
     '''
     def switch_user_status(self):
         logging.debug("Entered USERID: %s", self.args.switch_send)
-        helper.switchUserSend(self.args.switch_send, self.config)
-
-
-
-    '''
-    Catch -s/--switch-user
-    '''
-    def switch_chapter_status(self):
-        logging.debug("Entered CHAPTERID: %s", self.args.switch_chapter)
-        helper.switchChapterSend(self.args.switch_chapter, self.config)
+        helper.switchUserSend(self.args.switch_send)
 
 
     '''
@@ -177,15 +163,15 @@ class M2em:
     '''
     def delete_user(self):
         logging.debug("Entered USERID: %s", self.args.delete_user)
-        helper.deleteUser(self.args.delete_user, self.config)
+        helper.deleteUser(self.args.delete_user)
 
     def delete_chapter(self):
         logging.debug("Entered USERID: %s", self.args.delete_chapter)
-        helper.deleteChapter(self.args.delete_chapter, self.config)
+        helper.deleteChapter(self.args.delete_chapter)
 
     def delete_feed(self):
         logging.debug("Entered USERID: %s", self.args.delete_feed)
-        helper.deleteFeed(self.args.delete_feed, self.config)
+        helper.deleteFeed(self.args.delete_feed)
 
 
 
@@ -193,27 +179,27 @@ class M2em:
     Catch --list-feeds
     '''
     def list_feeds(self):
-        helper.printFeeds(self.config)
+        helper.printFeeds()
 
 
     '''
     Catch -L/--list-chapters-all
     '''
     def list_all_chapters(self):
-        helper.printChaptersAll(self.config)
+        helper.printChaptersAll()
 
 
     '''
     Catch -l/--list-chapters
     '''
     def list_chapters(self):
-        helper.printChapters(self.config)
+        helper.printChapters()
 
     '''
     Catch -lm/--list-manga
     '''
     def list_manga(self):
-        helper.printManga(self.config, self.args)
+        helper.printManga(self.args)
 
 
 
@@ -221,19 +207,19 @@ class M2em:
     Catch --list-users
     '''
     def list_users(self):
-        helper.printUsers(self.config)
+        helper.printUsers()
 
     '''
     Catch -u/--add-user
     '''
     def add_user(self):
-        helper.createUser(self.config)
+        helper.createUser()
 
     '''
     Catch -cd/--create-db
     '''
     def create_db(self):
-        helper.createDB(self.config)
+        helper.createDB()
 
 
     '''
@@ -340,12 +326,6 @@ class M2em:
         if self.args.list_users:
             self.list_users()
             return
-
-
-        if self.args.switch_chapter:
-            self.switch_chapter_status()
-            return
-
 
         if self.args.delete_user:
             self.delete_user()

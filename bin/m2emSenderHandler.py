@@ -11,29 +11,24 @@ except ImportError:
 def SenderHandler(config, args):
     """ Function that handles the sending of ebooks when a loop is called """
 
-
-    # Load configs required here
-    database = config["Database"]
-
     # Get all Chapters
-    chapters = helper.getChapters(database)
+    chapters = helper.getChapters()
 
     # Load Users
-    users = helper.getUsers(database)
+    users = helper.getUsers()
 
     # Debug Users:
     logging.debug("Userlist:")
-    logging.debug(users)
-
+    for i in users.iterator():
+        logging.debug(i.name)
 
 
     # Start conversion loop!
-    for chapter in chapters:
+    for chapter in chapters.iterator():
 
         # Initiate Sender class and fill it with data
         current_sender = Sender()
         current_sender.data_collector(config, chapter)
-        current_sender.database = database
         current_sender.users = users
 
         # Check if ebook has been converted yet, else skip
@@ -67,18 +62,15 @@ def directSender(config, chapterids=[]):
     logging.debug("Following Chapters are directly sent:")
     logging.debug(chapterids)
 
-    # Load configs required here
-    database = config["Database"]
-
-
-    chapters = helper.getChaptersFromID(database, chapterids)
+    chapters = helper.getChaptersFromID(chapterids)
 
     # Load Users
-    users = helper.getUsers(database)
+    users = helper.getUsers()
 
     # Debug Users:
     logging.debug("Userlist:")
-    logging.debug(users)
+    for i in users.iterator():
+        logging.debug(i.name)
 
 
     if not chapters:
@@ -90,7 +82,6 @@ def directSender(config, chapterids=[]):
             # Initiate Sender class and fill it with data
             current_sender = Sender()
             current_sender.data_collector(config, chapter)
-            current_sender.database = database
             current_sender.users = users
 
             # Check if ebook has been converted yet, else skip

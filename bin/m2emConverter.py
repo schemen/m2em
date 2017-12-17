@@ -32,9 +32,9 @@ class Converter:
 
 
         # get relevant data of this Manga
-        self.mangatitle = chapter[2]
-        self.manganame = chapter[11]
-        self.chapterdate = chapter[3]
+        self.mangatitle = chapter.title
+        self.manganame = chapter.manganame
+        self.chapterdate = chapter.date
 
         # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
         self.mangatitle = helper.sanetizeName(self.mangatitle)
