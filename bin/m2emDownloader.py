@@ -31,27 +31,27 @@ class Downloader:
         
         # Load configs required here
         self.database = config["Database"]
-        self.saveloc  = config["SaveLocation"]
+        self.saveloc = config["SaveLocation"]
 
         # get relevant data of this Chapter
-        self.mangastarturl   = chapter.url
-        self.mangapages      = chapter.pages
-        self.mangatitle      = chapter.title
-        self.manganame       = chapter.manganame
-        self.chapterdate     = chapter.date
+        self.mangastarturl = chapter.url
+        self.mangapages = chapter.pages
+        self.mangatitle = chapter.title
+        self.manganame = chapter.manganame
+        self.chapterdate = chapter.date
 
         # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
         self.mangatitle = helper.sanetizeName(self.mangatitle)
         self.manganame = helper.sanetizeName(self.manganame)
 
         # Define Download location
-        self.downloadfolder  = str(self.saveloc + self.manganame + "/" + self.mangatitle + "/images")
+        self.downloadfolder = str(self.saveloc + self.manganame + "/" + self.mangatitle + "/images")
 
         # get Origin of manga (Which mangawebsite)
         self.origin = helper.getSourceURL(self.mangastarturl)
-        
+
         # Initiate URL list
-        self.imageurls=[]
+        self.imageurls = []
 
 
 
@@ -70,19 +70,19 @@ class Downloader:
             # Turn Manga pages into Image links!
             for i in urllist:
                 self.imageurls.append(msparser.getImageUrl(i))
-            logging.debug("List of all Images for %s" % self.mangatitle)
+            logging.debug("List of all Images for %s", self.mangatitle)
             logging.debug(self.imageurls)
 
 
         # Mangafox Parser
         elif self.origin == "mangafox.me" or self.origin == "mangafox.la":
-            urllist = mxparser.getPagesUrl(self.mangastarturl,self.mangapages)
+            urllist = mxparser.getPagesUrl(self.mangastarturl, self.mangapages)
 
 
             # Turn Manga pages into Image links!
             for i in urllist:
                 self.imageurls.append(mxparser.getImageUrl(i))
-            logging.debug("List of all Images for %s" % self.mangatitle)
+            logging.debug("List of all Images for %s", self.mangatitle)
             logging.debug(self.imageurls)
 
 
@@ -90,7 +90,7 @@ class Downloader:
 
 
     def downloader(self):
-        logging.info("Starting download of %s..." % self.mangatitle)
+        logging.info("Starting download of %s...", self.mangatitle)
         # Download & save images!
         # check if we have images to download
         if not len(self.imageurls) == 0:
@@ -134,4 +134,4 @@ class Downloader:
                     cleaned.save(imagepath)
 
             # Finish :)
-            logging.info("Finished download of %s!"% self.mangatitle)
+            logging.info("Finished download of %s!", self.mangatitle)
