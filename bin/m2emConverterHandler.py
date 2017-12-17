@@ -3,25 +3,20 @@ import os
 import bin.m2emHelper as helper
 from bin.m2emConverter import Converter
 
-
 def ConverterHandler(config, args):
     """ Function that handles the Converter in a loop """
 
-    # Load configs required here
-    database = config["Database"]
-
     # Load Chapters!
-    chapters = helper.getChapters(database)
+    chapters = helper.getChapters()
 
 
     # Start conversion loop!
-    for chapter in chapters:
-
+    for chapter in chapters.iterator():
 
 
         # Verify if chapter has been downloaded already
         if not helper.verifyDownload(config, chapter):
-            logging.debug("Manga %s has not been downloaded!", chapter[2])
+            logging.debug("Manga %s has not been downloaded!", chapter.title)
         else:
 
 
@@ -52,11 +47,7 @@ def directConverter(config, chapterids=[]):
     logging.debug("Following Chapters are directly converted:")
     logging.debug(chapterids)
 
-    # Load configs required here
-    database = config["Database"]
-
-
-    chapters = helper.getChaptersFromID(database, chapterids)
+    chapters = helper.getChaptersFromID(chapterids)
 
 
     if not chapters:
@@ -79,8 +70,6 @@ def directConverter(config, chapterids=[]):
                     logging.info("Manga %s converted to CBZ already!",
                                  current_conversation.mangatitle)
                 else:
-                    logging.info("Starting conversion to CBZ of %s...",
-                                 current_conversation.mangatitle)
                     current_conversation.cbz_creator()
 
                 # Start conversion to Ebook format!
@@ -88,6 +77,4 @@ def directConverter(config, chapterids=[]):
                     logging.info("Manga %s converted to Ebook already!",
                                  current_conversation.mangatitle)
                 else:
-                    logging.info("Starting conversion to Ebook of %s...",
-                                 current_conversation.mangatitle)
                     current_conversation.eb_creator()

@@ -3,12 +3,11 @@ import logging
 import shutil
 import datetime
 import os
-import sqlite3
 import texttable
 import requests
 import validators
 from urllib.parse import urlparse
-from bin.M2emModelsBackup import *
+from bin.M2emModels import *
 import bin.sourceparser.m2emMangastream as msparser
 import bin.sourceparser.m2emMangafox as mxparser
 
@@ -33,24 +32,16 @@ def createDB():
 Function set manga as sent
 Returns: N/A
 '''
-def setIsSent(mangaid, database):
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as fail:
-        print("Could not connect to DB %s", fail)
+def setIsSent(mangaid):
 
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s", database)
-
-    # Insert Data
     try:
-        c.execute("update chapter set issent=1 where chapterid=(?)", (mangaid,))
-        conn.commit()
+        # Open DB
+        db.get_conn()
+        query = Chapter.update(issent=1).where(Chapter.chapterid == mangaid)
+        query.execute()
         logging.debug("Set chapter with ID %s as sent", mangaid)
-    except Exception as fail:
+    except  Exception as fail:
         logging.debug("Failed to save feed into database: %s", fail)
-    conn.close
 
 
 
@@ -59,10 +50,10 @@ def setIsSent(mangaid, database):
 Function write a feed into the DB
 Returns: N/A
 '''
-def writeFeed(url, config):
+def writeFeed(url):
 
     # Connect to DB
-    db.connect()
+    db.get_conn()
 
     # Insert Data
     feed = Feeds.create(url=url)
@@ -76,16 +67,16 @@ def writeFeed(url, config):
 Function that gets feed data and display it nicely
 Returns: N/A
 '''
-def printFeeds(config):
+def printFeeds():
 
     table = texttable.Texttable()
     table.set_deco(texttable.Texttable.HEADER)
     table.set_cols_dtype(['i',  # int
                           't',])  # text
     table.header(["ID", "URL"])
-    
+
     # Connect
-    db.connect()
+    db.get_conn()
 
     for row in Feeds.select():
         table.add_row([row.feedid, row.url])
@@ -100,7 +91,7 @@ def printFeeds(config):
 Function that gets feed data and display it nicely
 Returns: N/A
 '''
-def printUsers(config):
+def printUsers():
 
     table = texttable.Texttable()
     table.set_deco(texttable.Texttable.HEADER)
@@ -111,7 +102,7 @@ def printUsers(config):
                           'i'])  # text
     table.header(["ID", "USERNAME", "EMAIL", "KINDLE EMAIL", "SEND EBOOK"])
 
-    db.connect()
+    db.get_conn()
     for user in User.select():
         table.add_row([user.userid, user.name, user.email, user.kindle_mail, user.sendtokindle])
     db.close()
@@ -123,10 +114,10 @@ def printUsers(config):
 Function that gets feed data and display it nicely
 Returns: N/A
 '''
-def printChaptersAll(config):
+def printChaptersAll():
 
     # Make the query
-    db.connect()
+    db.get_conn()
     chapters = Chapter.select().order_by(Chapter.chapterid)
     db.close()
 
@@ -158,7 +149,7 @@ def printChaptersAll(config):
 Function that creates user in an interactive shell
 Returns: N/A
 '''
-def createUser(config):
+def createUser():
 
     # Start interactive Shell!
     while True:
@@ -205,7 +196,7 @@ def createUser(config):
         sendToKindle = "0"
 
     # Save data now!
-    db.connect()
+    db.get_conn()
     newuser = User.create(email=email, name=username, sendtokindle=sendToKindle, kindle_mail=kindlemail)
 
     try:
@@ -220,12 +211,12 @@ def createUser(config):
 '''
 Switch User Config sendToKindle from True to False and False to True
 '''
-def switchUserSend(userid, config):
+def switchUserSend(userid):
 
     user = ""
 
     # Get User
-    db.connect()
+    db.get_conn()
     try:
         user = User.get(User.userid == userid)
     except DoesNotExist:
@@ -256,10 +247,10 @@ def switchUserSend(userid, config):
 '''
 Delete User!
 '''
-def deleteUser(userid, config):
+def deleteUser(userid):
 
     # Get User
-    db.connect()
+    db.get_conn()
 
     try:
         user = User.get(User.userid == userid)
@@ -276,10 +267,10 @@ def deleteUser(userid, config):
 '''
 Delete Chapter!
 '''
-def deleteChapter(chapterid, config):
+def deleteChapter(chapterid):
 
     # Get Chapter
-    db.connect()
+    db.get_conn()
 
     try:
         chapter = Chapter.get(Chapter.chapterid == chapterid)
@@ -294,10 +285,10 @@ def deleteChapter(chapterid, config):
 '''
 Delete Feed!
 '''
-def deleteFeed(feedid, config):
+def deleteFeed(feedid):
 
     # Get Feed
-    db.connect()
+    db.get_conn()
 
     try:
         feed = Feeds.get(Feeds.feedid == feedid)
@@ -312,10 +303,10 @@ def deleteFeed(feedid, config):
 Function that prints the last 10 chapters
 Returns: N/A
 '''
-def printChapters(config):
+def printChapters():
 
     # Make the query
-    db.connect()
+    db.get_conn()
     chapters = Chapter.select().order_by(-Chapter.chapterid).limit(10)
     db.close()
 
@@ -344,26 +335,16 @@ def printChapters(config):
 
 '''
 Function that gets feed data returns it
-Returns: tabledata
+Returns: feeds
 '''
-def getFeeds(database):
+def getFeeds():
 
-    # TODO Switch to new Model
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+    # Make the query
+    db.get_conn()
+    feeds = Feeds.select()
+    db.close()
 
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
-
-    # Get Data
-    __data = c.execute("SELECT * FROM feeds")
-    __tabledata = __data.fetchall()
-
-    return __tabledata
+    return feeds
 
 
 
@@ -371,53 +352,38 @@ def getFeeds(database):
 Function that gets chapters and returns it
 Returns: __chapterdata
 '''
-def getChapters(database):
+def getChapters():
 
-    # TODO Switch to new Model
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+    # Make the query
+    db.get_conn()
+    chapters = Chapter.select()
 
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
-
-    # Get Data
-    __data = c.execute("SELECT * FROM chapter")
-    __chapterdata = __data.fetchall()
-
-    return __chapterdata
-
+    return chapters
 
 
 '''
 Function that gets chapters from IDs and returns it
 Returns: __chapterdata
 '''
-def getChaptersFromID(database, chapterids):
+def getChaptersFromID(chapterids):
 
-    # TODO Switch to new Model
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
 
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
-    __chapterdata = []
+    chapterdata = []
+    db.get_conn()
 
     for i in chapterids:
         # Get Data
-        __data = c.execute("SELECT * FROM chapter where chapterid=(?)", (i,))
-        __chapterdata = __chapterdata + __data.fetchall()
+        try:
+            chapter = Chapter.select().where(Chapter.chapterid == i).get()
+            chapterdata.append(chapter)
+        except DoesNotExist:
+            logging.error("Chapter with ID %s does not exist!", i)
+            
 
     logging.debug("Passed chapters:")
-    logging.debug(__chapterdata)
-    return __chapterdata
+    for i in chapterdata:
+        logging.debug(i.title)
+    return chapterdata
 
 
 
@@ -425,24 +391,13 @@ def getChaptersFromID(database, chapterids):
 Function that gets chapters and returns it
 Returns: __userdata
 '''
-def getUsers(database):
+def getUsers():
 
-    # TODO Switch to new Model
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
+    # Make the query
+    db.get_conn()
+    users = User.select()
 
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
-
-    # Get Data
-    __data = c.execute("SELECT * FROM user")
-    __userdata = __data.fetchall()
-
-    return __userdata
+    return users
 
 
 
@@ -569,9 +524,9 @@ Returns: true or false
 def verifyDownload(config, chapter):
 
     saveloc = config["SaveLocation"]
-    mangapages = chapter[9]
-    mangatitle = chapter[2]
-    manganame = chapter[11]
+    mangapages = chapter.pages
+    mangatitle = chapter.title
+    manganame = chapter.manganame
 
     # check if mangatitle or manganame contains ":" characters that OS can't handle as folders
     mangatitle = sanetizeName(mangatitle)
@@ -656,42 +611,31 @@ def initialize_logger(output_dir, outputlevel):
 Function that gets feed data and display it nicely
 Returns: N/A
 '''
-def printManga(config, args):
-
-
-    # Get database config
-    database = config["Database"]
-
-    # Open Database
-    try:
-        conn = sqlite3.connect(database)
-    except Exception as e:
-        print("Could not connect to DB %s" % e)
-
-    c = conn.cursor()
-    logging.debug("Succesfully Connected to DB %s" % database)
-
+def printManga(args):
 
 
     if args.list_manga == "all":
+
+        workdata = []
         # Get Data
-        __data = c.execute("SELECT manganame FROM chapter")
-        __tabledata = set(__data.fetchall())
+        data = Chapter.select(Chapter.manganame)
+        for i in data:
+            workdata.append(i.manganame)
+        tabledata = set(workdata)
 
 
-        if __tabledata:
+        if tabledata:
             logging.info("Mangas with chapters in the database:")
-            for i in __tabledata:
+            for i in tabledata:
                 logging.info("* %s"% i)
     else:
-        __data = c.execute("SELECT * FROM chapter where manganame=(?)", (args.list_manga,))
-        __tabledata = __data.fetchall()
+        data = Chapter.select().where(Chapter.manganame == args.list_manga)
 
-        if len(__tabledata) == 0:
+        if not data:
             logging.error("No Manga with that Name found!")
         else:
             # Reverse List to get newest first
-            __tabledata.reverse()
+            #__tabledata.reverse()
 
             table = texttable.Texttable(max_width=120)
             table.set_deco(texttable.Texttable.HEADER)
@@ -706,11 +650,11 @@ def printManga(config, args):
 
 
             logging.info("Listing all chapters of %s:"% args.list_manga)
-            for row in __tabledata:
+            for row in data:
                 # Rename row[8]
-                if row[8] == 1:
+                if row.issent == 1:
                     sendstatus = "SENT"
                 else:
                     sendstatus = "NOT SENT"
-                table.add_row([row[0], row[11], row[10], row[5]+"\n", str(row[1]), sendstatus])
+                table.add_row([row.chapterid, row.manganame, row.chapter, row.desc+"\n", str(row.origin), sendstatus])
             logging.info(table.draw())

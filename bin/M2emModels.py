@@ -1,12 +1,16 @@
 from peewee import *
+import configparser
 
 
-database = SqliteDatabase('main.1.db')
+config_reader = configparser.ConfigParser()
+config_reader.read("config.ini")
+config = config_reader["CONFIG"]
 
+db = SqliteDatabase(config['Database'])
 
 class BaseModel(Model):
     class Meta:
-        database = database
+        database = db
 
 class User(BaseModel):
     email = TextField(null=True)
@@ -37,13 +41,13 @@ class Chapter(BaseModel):
         order_by = ('chapterid',)
 
 
-class Feed(BaseModel):
+class Feeds(BaseModel):
     feedid = PrimaryKeyField()
-    url = CharField()
+    url = TextField()
 
     class Meta:
         order_by = ('feedid',)
 
 def create_tables():
-    database.connect()
-    database.create_tables([User, Chapter, Feed])
+    db.get_conn()
+    db.create_tables([User, Chapter, Feeds])
