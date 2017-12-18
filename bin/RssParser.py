@@ -1,9 +1,9 @@
 import logging
 import ssl
 import feedparser
-import bin.m2emHelper as helper
-from bin.models.m2emManga import Manga
-from bin.M2emModels import *
+import bin.Helper as helper
+from bin.models.Manga import Manga
+from bin.Models import *
 
 # Remove verification need of feedparser
 ssl._create_default_https_context = ssl._create_unverified_context

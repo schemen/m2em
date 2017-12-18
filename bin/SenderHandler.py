@@ -1,7 +1,7 @@
 import logging
 import os
-import bin.m2emHelper as helper
-from bin.m2emSender import Sender
+import bin.Helper as helper
+from bin.Sender import Sender
 
 try:
     from StringIO import StringIO

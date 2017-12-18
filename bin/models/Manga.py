@@ -1,6 +1,6 @@
 import logging
-from bin.M2emModels import *
-import bin.m2emHelper as helper
+from bin.Models import *
+import bin.Helper as helper
 
 
 class Manga:

@@ -1,8 +1,8 @@
 import logging
 import os
 from shutil import move
-import bin.m2emHelper as helper
-from bin.m2emDownloader import Downloader
+import bin.Helper as helper
+from bin.Downloader import Downloader
 
 '''
 downloadHandler

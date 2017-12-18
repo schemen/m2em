@@ -7,7 +7,7 @@ from email.mime.base import MIMEBase
 from email.utils import formatdate, make_msgid
 from email.generator import Generator
 from email import encoders
-import bin.m2emHelper as helper
+import bin.Helper as helper
 
 try:
     from StringIO import StringIO

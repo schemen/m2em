@@ -1,7 +1,7 @@
 import logging
 import os
-import bin.m2emHelper as helper
-from bin.m2emConverter import Converter
+import bin.Helper as helper
+from bin.Converter import Converter
 
 def ConverterHandler(config, args):
     """ Function that handles the Converter in a loop """

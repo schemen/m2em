@@ -9,11 +9,11 @@ import datetime
 import validators
 from bin._version import __version__
 # Start of the fun!
-import bin.m2emHelper as helper
-import bin.m2emRssParser as mparser
-import bin.m2emDownloaderHandler as mdownloader
-import bin.m2emConverterHandler as mconverter
-import bin.m2emSenderHandler as msender
+import bin.Helper as helper
+import bin.RssParser as mparser
+import bin.DownloaderHandler as mdownloader
+import bin.ConverterHandler as mconverter
+import bin.SenderHandler as msender
 
 class M2em:
     """ Main Class """

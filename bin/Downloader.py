@@ -2,9 +2,9 @@ import logging
 import os
 import requests
 from shutil import move
-import bin.m2emHelper as helper
-import bin.sourceparser.m2emMangastream as msparser
-import bin.sourceparser.m2emMangafox as mxparser
+import bin.Helper as helper
+import bin.sourceparser.Mangastream as msparser
+import bin.sourceparser.Mangafox as mxparser
 from PIL import Image
 from PIL import ImageOps
 from PIL import ImageFilter

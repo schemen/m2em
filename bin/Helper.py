@@ -7,9 +7,9 @@ import texttable
 import requests
 import validators
 from urllib.parse import urlparse
-from bin.M2emModels import *
-import bin.sourceparser.m2emMangastream as msparser
-import bin.sourceparser.m2emMangafox as mxparser
+from bin.Models import *
+import bin.sourceparser.Mangastream as msparser
+import bin.sourceparser.Mangafox as mxparser
 
 '''
 
