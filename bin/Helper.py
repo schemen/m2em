@@ -104,6 +104,10 @@ def printUsers():
 
     db.get_conn()
     for user in User.select():
+        if user.sendtokindle == 1:
+            sendstatus = "YES"
+        else:
+            sendstatus = "NO"
         table.add_row([user.userid, user.name, user.email, user.kindle_mail, user.sendtokindle])
     db.close()
     logging.info(table.draw())
