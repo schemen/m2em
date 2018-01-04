@@ -24,7 +24,7 @@ class User(BaseModel):
 
 
 class Chapter(BaseModel):
-    chapter = IntegerField(null=True)
+    chapter = TextField(null=True)
     chapterid = PrimaryKeyField()
     date = TextField(null=True)
     desc = TextField(null=True)
