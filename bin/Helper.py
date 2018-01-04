@@ -99,7 +99,7 @@ def printUsers():
                           't',
                           't',
                           't',
-                          'i'])  # text
+                          't'])  # text
     table.header(["ID", "USERNAME", "EMAIL", "KINDLE EMAIL", "SEND EBOOK"])
 
     db.get_conn()
@@ -108,7 +108,7 @@ def printUsers():
             sendstatus = "YES"
         else:
             sendstatus = "NO"
-        table.add_row([user.userid, user.name, user.email, user.kindle_mail, user.sendtokindle])
+        table.add_row([user.userid, user.name, user.email, user.kindle_mail, sendstatus])
     db.close()
     logging.info(table.draw())
 
