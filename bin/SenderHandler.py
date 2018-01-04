@@ -19,7 +19,7 @@ def SenderHandler(config, args):
 
     # Debug Users:
     logging.debug("Userlist:")
-    for i in users.iterator():
+    for i in users:
         logging.debug(i.name)
 
 
@@ -69,7 +69,7 @@ def directSender(config, chapterids=[]):
 
     # Debug Users:
     logging.debug("Userlist:")
-    for i in users.iterator():
+    for i in users:
         logging.debug(i.name)
 
 
