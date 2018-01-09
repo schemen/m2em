@@ -91,6 +91,6 @@ class Converter:
 
             try:
                 subprocess.call(["kcc-c2e", "-p", self.ebprofile, "-f", self.ebformat,
-                                 "-m", "-q", "-r", "2", "-u", "-s", self.cbzlocation])
+                                 "-m", "-r", "2", "-u", "-s", self.cbzlocation])
             except Exception as fail:
                 logging.debug("Failed to convert epub %s", fail)
