@@ -1,20 +1,16 @@
 import logging
 import os
 from shutil import move
-import bin.m2emHelper as helper
-from bin.m2emDownloader import Downloader
-
+import bin.Helper as helper
+from bin.Downloader import Downloader
 
 '''
 downloadHandler
 '''
 def downloader(config, args):
     
-    # Load configs required here
-    database = config["Database"]
-
-
-    chapters = helper.getChapters(database)
+    # Make the query
+    chapters = helper.getChapters()
 
     if args.start:
         logging.debug("The loop will only consider Chapters younger than 24h!")
@@ -22,7 +18,7 @@ def downloader(config, args):
 
 
     # Start Download loop!
-    for chapter in chapters:
+    for chapter in chapters.iterator():
 
         # Initialize Downloader class & load basic params
         current_chapter = Downloader()
@@ -63,14 +59,11 @@ def directDownloader(config, chapterids=[]):
     logging.debug("Following Chapters are directly converted:")
     logging.debug(chapterids)
 
-    # Load configs required here
-    database    = config["Database"]
 
-
-    chapters = helper.getChaptersFromID(database, chapterids)
+    chapters = helper.getChaptersFromID(chapterids)
 
     # Load Users
-    users    = helper.getUsers(database)
+    users    = helper.getUsers()
 
     # Debug Users:
     logging.debug("Userlist:")

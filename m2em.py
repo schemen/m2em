@@ -9,15 +9,14 @@ import datetime
 import validators
 from bin._version import __version__
 # Start of the fun!
-import bin.m2emHelper as helper
-import bin.m2emRssParser as mparser
-import bin.m2emDownloaderHandler as mdownloader
-import bin.m2emConverterHandler as mconverter
-import bin.m2emSenderHandler as msender
-
-#logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+import bin.Helper as helper
+import bin.RssParser as mparser
+import bin.DownloaderHandler as mdownloader
+import bin.ConverterHandler as mconverter
+import bin.SenderHandler as msender
 
 class M2em:
+    """ Main Class """
 
     def __init__(self):
 
@@ -39,43 +38,58 @@ class M2em:
 
         # Check if Database exists, else create
         if not os.path.isfile(self.config["Database"]):
-            helper.createDB(self.config)
+            helper.createDB()
 
 
     def read_arguments(self):
+        """ function that reads all arguments """
 
         # Get user Input
         parser = argparse.ArgumentParser(description='Manga to eManga - m2em')
-        parser.add_argument("-af", "--add-feed", help="Add RSS Feed of Manga. Only Mangastream & MangaFox are supported")
+        parser.add_argument("-af", "--add-feed",
+                            help="Add RSS Feed of Manga. Only Mangastream & MangaFox are supported")
         parser.add_argument("-au", "--add-user", help="Adds new user",
-                                action="store_true")
-        parser.add_argument("-lm", "--list-manga", help="Lists Manga saved in database. If a Manga is passed, lists chapters to said Manga",nargs="?",const='all')                       
+                            action="store_true")
+        parser.add_argument("-lm", "--list-manga",
+                            help="Lists Manga saved in database. If a Manga is passed, lists chapters to said Manga",
+                            nargs="?", const='all')
         parser.add_argument("-lc", "--list-chapters", help="Lists the last 10 Chapters",
-                                action="store_true")
+                            action="store_true")
         parser.add_argument("-Lc", "--list-chapters-all", help="Lists all Chapters",
-                                action="store_true")
+                            action="store_true")
         parser.add_argument("-lf", "--list-feeds", help="Lists all feeds",
-                                action="store_true")
+                            action="store_true")
         parser.add_argument("-lu", "--list-users", help="Lists all Users",
-                                action="store_true")
+                            action="store_true")
         parser.add_argument("-cd", "--create-db", help="Creates DB. Uses Configfile for Naming",
-                                action="store_true")
+                            action="store_true")
         parser.add_argument("-s", "--start", help="Starts one loop",
-                                action="store_true")
-        parser.add_argument("--send", help="Sends Chapter directly by chapter ID. Multiple IDs can be given", default=[], nargs = '*',)
-        parser.add_argument("--convert", help="Converts Chapter directly by chapter ID. Multiple IDs can be given", default=[], nargs = '*',)
-        parser.add_argument("--download", help="Downloads Chapter directly by chapter ID. Multiple IDs can be given", default=[], nargs = '*',)
-        parser.add_argument("-a", "--action", help="Start action. Options are: rssparser (collecting feed data), downloader, converter or sender ")
-        parser.add_argument("-ss", "--switch-send", help="Pass ID of User. Switches said user Send eBook status")
-        parser.add_argument("-sc", "--switch-chapter", help="Pass ID of Chapter. Switches said Chapter Sent status")
-        parser.add_argument("-dc", "--delete-chapter", help="Pass ID of Chapter. Deletes said Chapter")
-        parser.add_argument("-du", "--delete-user", help="Pass ID of User. Deletes said User")
-        parser.add_argument("-df", "--delete-feed", help="Pass ID of Feed. Deletes said Feed")
+                            action="store_true")
+        parser.add_argument("--send",
+                            help="Sends Chapter directly by chapter ID. Multiple IDs can be given",
+                            default=[], nargs='*',)
+        parser.add_argument("--convert",
+                            help="Converts Chapter directly by chapter ID. Multiple IDs can be given",
+                            default=[], nargs='*',)
+        parser.add_argument("--download",
+                            help="Downloads Chapter directly by chapter ID. Multiple IDs can be given",
+                            default=[], nargs='*',)
+        parser.add_argument("-a", "--action",
+                            help="Start action. Options are: rssparser (collecting feed data), downloader, converter or sender ")
+        parser.add_argument("-ss", "--switch-send",
+                            help="Pass ID of User. Switches said user Send eBook status")
+        parser.add_argument("-dc", "--delete-chapter",
+                            help="Pass ID of Chapter. Deletes said Chapter")
+        parser.add_argument("-du", "--delete-user",
+                            help="Pass ID of User. Deletes said User")
+        parser.add_argument("-df", "--delete-feed",
+                            help="Pass ID of Feed. Deletes said Feed")
         parser.add_argument("--daemon", help="Run as daemon",
-                                action="store_true")
+                            action="store_true")
         parser.add_argument("-d", "--debug", help="Debug Mode",
-                                action="store_true")
-        parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+                            action="store_true")
+        parser.add_argument('-v', '--version',
+                            action='version', version='%(prog)s ' + __version__)
 
         self.args = parser.parse_args()
 
@@ -93,27 +107,27 @@ class M2em:
             and self.args.delete_chapter is None \
             and self.args.delete_feed is None \
             and self.args.delete_user is None \
-            and self.args.switch_chapter is None \
             and self.args.switch_send is None \
             and self.args.add_user is False \
             and self.args.list_manga is None \
             and not any([self.args.add_user,
-                            self.args.create_db,
-                            self.args.daemon,
-                            self.args.list_chapters,
-                            self.args.list_chapters_all,
-                            self.args.list_feeds,
-                            self.args.list_users,
-                            self.args.download,
-                            self.args.convert,
-                            self.args.send,
-                            self.args.start,]):
+                         self.args.create_db,
+                         self.args.daemon,
+                         self.args.list_chapters,
+                         self.args.list_chapters_all,
+                         self.args.list_feeds,
+                         self.args.list_users,
+                         self.args.download,
+                         self.args.convert,
+                         self.args.send,
+                         self.args.start,]):
             logging.error("At least one argument is required!")
-        
-        logging.debug("Passed arguments: \n %s"% self.args)
 
-    #Read Config
+        logging.debug("Passed arguments: \n %s", self.args)
+
+
     def read_config(self):
+        """ Reads the config """
 
         logging.debug("Loading configuration")
         config_reader = configparser.ConfigParser()
@@ -129,9 +143,9 @@ class M2em:
     Catch -af/--add-feed
     '''
     def save_feed_to_db(self):
-        logging.debug("Entered URL: %s" % self.args.add_feed)
+        logging.debug("Entered URL: %s", self.args.add_feed)
         if validators.url(self.args.add_feed):
-            helper.writeFeed(self.args.add_feed, self.config)
+            helper.writeFeed(self.args.add_feed)
         else:
             logging.error("You need to enter an URL!")
 
@@ -140,90 +154,72 @@ class M2em:
     Catch -s/--switch-user
     '''
     def switch_user_status(self):
-        logging.debug("Entered USERID: %s" % self.args.switch_send)
-        helper.switchUserSend(self.args.switch_send, self.config)
-
-
-
-    '''
-    Catch -s/--switch-user
-    '''
-    def switch_chapter_status(self):
-        logging.debug("Entered CHAPTERID: %s" % self.args.switch_chapter)
-        helper.switchChapterSend(self.args.switch_chapter, self.config)
+        logging.debug("Entered USERID: %s", self.args.switch_send)
+        helper.switchUserSend(self.args.switch_send)
 
 
     '''
     Delete Stuff functions
     '''
     def delete_user(self):
-        logging.debug("Entered USERID: %s" % self.args.delete_user)
-        helper.deleteUser(self.args.delete_user, self.config)
+        logging.debug("Entered USERID: %s", self.args.delete_user)
+        helper.deleteUser(self.args.delete_user)
 
     def delete_chapter(self):
-        logging.debug("Entered USERID: %s" % self.args.delete_chapter)
-        helper.deleteChapter(self.args.delete_chapter, self.config)
+        logging.debug("Entered USERID: %s", self.args.delete_chapter)
+        helper.deleteChapter(self.args.delete_chapter)
 
     def delete_feed(self):
-        logging.debug("Entered USERID: %s" % self.args.delete_feed)
-        helper.deleteFeed(self.args.delete_feed, self.config)
+        logging.debug("Entered USERID: %s", self.args.delete_feed)
+        helper.deleteFeed(self.args.delete_feed)
 
 
 
-    '''    
+    '''
     Catch --list-feeds
     '''
     def list_feeds(self):
-        helper.printFeeds(self.config)
+        helper.printFeeds()
 
 
-    '''    
+    '''
     Catch -L/--list-chapters-all
     '''
     def list_all_chapters(self):
-        helper.printChaptersAll(self.config)
-        pass
+        helper.printChaptersAll()
 
 
-    '''    
+    '''
     Catch -l/--list-chapters
     '''
     def list_chapters(self):
-        helper.printChapters(self.config)
-        pass
+        helper.printChapters()
 
-
-    '''    
+    '''
     Catch -lm/--list-manga
     '''
     def list_manga(self):
-        helper.printManga(self.config,self.args)
-        pass
+        helper.printManga(self.args)
 
 
 
-    '''    
+    '''
     Catch --list-users
     '''
     def list_users(self):
-        helper.printUsers(self.config)
-        pass
+        helper.printUsers()
 
-
-    '''    
+    '''
     Catch -u/--add-user
     '''
     def add_user(self):
-        helper.createUser(self.config)
-        pass
+        helper.createUser()
 
-
-    '''    
+    '''
     Catch -cd/--create-db
     '''
     def create_db(self):
-        helper.createDB(self.config)
-        pass
+        helper.createDB()
 
 
     '''
@@ -240,7 +236,7 @@ class M2em:
 
 
         elif self.args.action == "rssparser":
-            logging.info("Action '%s' is not yet implemented." % self.args.action)
+            logging.info("Action '%s' is not yet implemented.", self.args.action)
 
 
         elif self.args.action == "converter":
@@ -255,9 +251,7 @@ class M2em:
             logging.info("Finished sending all chapters!")
 
         else:
-            logging.info("%s is not a valid action. Choose between  'rssparser', 'downloader', 'converter' or 'sender'"% self.args.action)
-        pass
-
+            logging.info("%s is not a valid action. Choose between  'rssparser', 'downloader', 'converter' or 'sender'", self.args.action)
 
 
     '''
@@ -265,18 +259,14 @@ class M2em:
     '''
     def send_chapter(self):
         msender.directSender(self.config, self.args.send)
-        pass
 
 
     def convert_chapter(self):
         mconverter.directConverter(self.config, self.args.convert)
-        pass
 
 
     def download_chapter(self):
         mdownloader.directDownloader(self.config, self.args.download)
-        pass
-
 
 
     '''
@@ -337,12 +327,6 @@ class M2em:
             self.list_users()
             return
 
-
-        if self.args.switch_chapter:
-            self.switch_chapter_status()
-            return
-
-
         if self.args.delete_user:
             self.delete_user()
             return
@@ -388,7 +372,7 @@ class M2em:
                     daemon = False
 
                 logging.info("#########################")
-                logging.info("Starting Loop at %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                logging.info("Starting Loop at %s", datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 
                 logging.info("Starting RSS Data Fetcher!")
@@ -408,7 +392,7 @@ class M2em:
                 logging.info("Finished sending ebooks!")
 
                 if daemon:
-                    logging.info("Sleeping for %s seconds...\n" % (self.config["Sleep"]))
+                    logging.info("Sleeping for %s seconds...\n", (self.config["Sleep"]))
                     time.sleep(int(self.config["Sleep"]))
 
 # Execute Main

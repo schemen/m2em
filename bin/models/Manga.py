@@ -1,6 +1,6 @@
-import sqlite3
 import logging
-import bin.m2emHelper as helper
+from bin.Models import *
+import bin.Helper as helper
 
 
 class Manga:
@@ -24,24 +24,13 @@ class Manga:
     def load_from_feed(self, entry, parent_feed):
         self.chapter_link = entry.link
 
-        # Open Database
-        try:
-            conn = sqlite3.connect(self.database)
-        except Exception as e:
-            logging.error("Could not connect to DB %s" % e)
-            return False
-        logging.debug("Succesfully Connected to DB %s" % self.database)
-        c = conn.cursor()
-
         # Check if link is already in DB to make sure only data gets downloaded that is not yet downloaded
         logging.debug("Checking if chapter is already saved...")
-        c.execute("SELECT url FROM chapter WHERE url = ?", (str(self.chapter_link),))
-        self.duplicated = c.fetchall()
-        conn.close()
+        db.get_conn()
+        self.duplicated = Chapter.select().where(Chapter.url==self.chapter_link)
 
-        if len(self.duplicated) != 0:
+        if self.duplicated.exists():
             logging.debug("Manga is already in Database! Skipping...")
-            logging.debug("Duplicated Data: %s" % self.duplicated)
         else:
 
             # Getting specific manga data
@@ -74,41 +63,25 @@ class Manga:
 
 
     def save(self):
-        if not self.database:
-            logging.error("No database specified")
-            return False
 
-        # Open Database
-        try:
-            conn = sqlite3.connect(self.database)
-        except Exception as e:
-            logging.error("Could not connect to DB %s" % e)
-            return False
-        logging.debug("Succesfully Connected to DB %s" % self.database)
-        c = conn.cursor()
-
-        # Check if Feed is already saved in DB
-        #c.execute("SELECT url FROM chapter WHERE url = ?", (str(self.chapter_link),))
-        #duplicated = c.fetchall()
-
-        if len(self.duplicated) != 0:
+        if self.duplicated.exists():
             logging.debug("Manga is already in Database! Skipping...")
         else:
-            logging.info("Saving Chapter Data for %s" % self.title)
-            c.execute("insert into chapter (origin, title, date, url, desc, ispulled, isconverted, issent, pages, chapter, manganame) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                      (self.parent_feed,
-                      self.title,
-                      self.chapter_pubDate,
-                      self.chapter_link,
-                      self.chapter_name,
-                      self.ispulled,
-                      self.isconverted,
-                      self.issent,
-                      self.chapter_pages,
-                      self.chapter,
-                      self.manga_name))
-            conn.commit()
+            logging.info("Saving Chapter Data for %s", self.title)
+            db.get_conn()
+            chapter = Chapter()
+            chapter.chapter = self.chapter
+            chapter.date = self.chapter_pubDate
+            chapter.desc = self.chapter_name
+            chapter.isconverted = self.isconverted
+            chapter.ispulled = self.ispulled
+            chapter.issent = self.issent
+            chapter.manganame = self.manga_name
+            chapter.origin = self.parent_feed
+            chapter.pages = self.chapter_pages
+            chapter.title = self.title
+            chapter.url = self.chapter_link
+            chapter.save()
             logging.info("Succesfully saved Data!")
 
-        conn.close()
         logging.debug("\n")
