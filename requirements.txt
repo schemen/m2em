@@ -1,8 +1,8 @@
-validators
-texttable
-requests
-bs4
-urllib3
-feedparser
-KindleComicConverter
-peewee
+validators==0.12.0
+texttable==1.1.1
+requests==2.18.4
+bs4==0.0.1
+urllib3==1.22
+feedparser==5.2.1
+KindleComicConverter==5.4.3
+peewee==2.10.2
