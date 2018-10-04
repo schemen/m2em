@@ -8,24 +8,20 @@ config = config_reader["CONFIG"]
 
 db = SqliteDatabase(config['Database'])
 
-class BaseModel(Model):
+class ModelBase(Model):
     class Meta:
         database = db
 
-class User(BaseModel):
+class User(ModelBase):
     email = TextField(null=True)
     name = TextField()
     kindle_mail = TextField(null=True)
     sendtokindle = IntegerField(null=True)
-    userid = PrimaryKeyField()
+    userid = AutoField()
 
-    class Meta:
-        order_by = ('userid',)
-
-
-class Chapter(BaseModel):
+class Chapter(ModelBase):
     chapter = TextField(null=True)
-    chapterid = PrimaryKeyField()
+    chapterid = AutoField()
     date = TextField(null=True)
     desc = TextField(null=True)
     isconverted = IntegerField(null=True)
@@ -37,17 +33,10 @@ class Chapter(BaseModel):
     title = TextField()
     url = TextField()
 
-    class Meta:
-        order_by = ('chapterid',)
-
-
-class Feeds(BaseModel):
-    feedid = PrimaryKeyField()
+class Feeds(ModelBase):
+    feedid = AutoField()
     url = TextField()
 
-    class Meta:
-        order_by = ('feedid',)
-
 def create_tables():
-    db.get_conn()
+    db.connection()
     db.create_tables([User, Chapter, Feeds])

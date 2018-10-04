@@ -5,4 +5,4 @@ bs4==0.0.1
 urllib3==1.22
 feedparser==5.2.1
 KindleComicConverter==5.4.3
-peewee==2.10.2
+peewee==3.7.0

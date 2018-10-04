@@ -36,7 +36,7 @@ def setIsSent(mangaid):
 
     try:
         # Open DB
-        db.get_conn()
+        db.connection()
         query = Chapter.update(issent=1).where(Chapter.chapterid == mangaid)
         query.execute()
         logging.debug("Set chapter with ID %s as sent", mangaid)
@@ -53,7 +53,7 @@ Returns: N/A
 def writeFeed(url):
 
     # Connect to DB
-    db.get_conn()
+    db.connection()
 
     # Insert Data
     feed = Feeds.create(url=url)
@@ -76,7 +76,7 @@ def printFeeds():
     table.header(["ID", "URL"])
 
     # Connect
-    db.get_conn()
+    db.connection()
 
     for row in Feeds.select():
         table.add_row([row.feedid, row.url])
@@ -102,7 +102,7 @@ def printUsers():
                           't'])  # text
     table.header(["ID", "USERNAME", "EMAIL", "KINDLE EMAIL", "SEND EBOOK"])
 
-    db.get_conn()
+    db.connection()
     for user in User.select():
         if user.sendtokindle == 1:
             sendstatus = "YES"
@@ -121,7 +121,7 @@ Returns: N/A
 def printChaptersAll():
 
     # Make the query
-    db.get_conn()
+    db.connection()
     chapters = Chapter.select().order_by(Chapter.chapterid)
     db.close()
 
@@ -200,7 +200,7 @@ def createUser():
         sendToKindle = "0"
 
     # Save data now!
-    db.get_conn()
+    db.connection()
     newuser = User.create(email=email, name=username, sendtokindle=sendToKindle, kindle_mail=kindlemail)
 
     try:
@@ -220,7 +220,7 @@ def switchUserSend(userid):
     user = ""
 
     # Get User
-    db.get_conn()
+    db.connection()
     try:
         user = User.get(User.userid == userid)
     except DoesNotExist:
@@ -254,7 +254,7 @@ Delete User!
 def deleteUser(userid):
 
     # Get User
-    db.get_conn()
+    db.connection()
 
     try:
         user = User.get(User.userid == userid)
@@ -274,7 +274,7 @@ Delete Chapter!
 def deleteChapter(chapterid):
 
     # Get Chapter
-    db.get_conn()
+    db.connection()
 
     try:
         chapter = Chapter.get(Chapter.chapterid == chapterid)
@@ -292,7 +292,7 @@ Delete Feed!
 def deleteFeed(feedid):
 
     # Get Feed
-    db.get_conn()
+    db.connection()
 
     try:
         feed = Feeds.get(Feeds.feedid == feedid)
@@ -310,7 +310,7 @@ Returns: N/A
 def printChapters():
 
     # Make the query
-    db.get_conn()
+    db.connection()
     chapters = Chapter.select().order_by(-Chapter.chapterid).limit(10)
     db.close()
 
@@ -344,7 +344,7 @@ Returns: feeds
 def getFeeds():
 
     # Make the query
-    db.get_conn()
+    db.connection()
     feeds = Feeds.select()
     db.close()
 
@@ -359,7 +359,7 @@ Returns: __chapterdata
 def getChapters():
 
     # Make the query
-    db.get_conn()
+    db.connection()
     chapters = Chapter.select()
 
     return chapters
@@ -373,7 +373,7 @@ def getChaptersFromID(chapterids):
 
 
     chapterdata = []
-    db.get_conn()
+    db.connection()
 
     for i in chapterids:
         # Get Data
@@ -398,7 +398,7 @@ Returns: __userdata
 def getUsers():
 
     # Make the query
-    db.get_conn()
+    db.connection()
     users = User.select()
 
     return users
