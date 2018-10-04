@@ -13,7 +13,7 @@ def RssParser(config):
     """ Function that handles the coordination of rss parsing """
 
     # Get all feeds
-    db.get_conn()
+    db.connection()
     rssdata = Feeds.select().execute()
 
     logging.info("Checking for new Feed Data...")
