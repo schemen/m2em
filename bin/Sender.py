@@ -46,11 +46,11 @@ class Sender:
         # Load configs required here
         self.saveloc = config["SaveLocation"]
         self.ebformat = config["EbookFormat"]
-        self.smtpserver = config["SMTPServer"]
-        self.serverport = config["ServerPort"]
-        self.emailadress = config["EmailAdress"]
-        self.password = config["EmailAdressPw"]
-        self.starttls = config["ServerStartSSL"]
+        self.smtpserver = os.environ.get('SMTPServer', config["SMTPServer"])
+        self.serverport = os.environ.get('ServerPort', config["ServerPort"])
+        self.emailadress = os.environ.get('EmailAddress', config["EmailAddress"])
+        self.password = os.environ.get('EmailAddressPw', config["EmailAddressPw"])
+        self.starttls = os.environ.get('ServerStartSSL', config["ServerStartSSL"])
 
 
         # get relevant data of this Manga
