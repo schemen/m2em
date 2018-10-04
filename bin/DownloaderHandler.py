@@ -43,13 +43,10 @@ def downloader(config, args):
             # Check if Download loop & Download task is selected
             if not args.start:
                 current_chapter.data_processor()
-                current_chapter.downloader()
             else:
-
                 # Only start run if chapter is younger than 24h
                 if  helper.checkTime(current_chapter.chapterdate):
                     current_chapter.data_processor()
-                    current_chapter.downloader()
                 else:
                     logging.debug("%s is older than 24h, will not be processed by daemon." % current_chapter.mangatitle)
 
@@ -63,7 +60,7 @@ def directDownloader(config, chapterids=[]):
     chapters = helper.getChaptersFromID(chapterids)
 
     # Load Users
-    users    = helper.getUsers()
+    users = helper.getUsers()
 
     # Debug Users:
     logging.debug("Userlist:")
@@ -94,4 +91,3 @@ def directDownloader(config, chapterids=[]):
             else:
 
                 current_chapter.data_processor()
-                current_chapter.downloader()

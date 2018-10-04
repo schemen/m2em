@@ -99,4 +99,3 @@ def getImageUrl(pageurl):
 
     imageurl = "https:" + var1['src']
     return imageurl
-    pass
