@@ -450,8 +450,8 @@ def getMangaData(url, entry):
         mangadata = [manganame, pages, chapter, title, chapter_name, chapter_pubDate]
 
     # Mangafox Parser
-    elif origin == "mangafox.me" or origin == "mangafox.la":
-        logging.debug("Getting Mangadata from Mangafox.me for %s" % url)
+    elif origin == "mangafox.me" or origin == "mangafox.la" or origin == "fanfox.net":
+        logging.debug("Getting Mangadata from Mangafox. for %s" % url)
 
         # Easy Stuff
         title = entry.title

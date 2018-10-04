@@ -39,7 +39,11 @@ def getChapterName(page):
 
     #Get Manga Titel
     search = re.search(': (.*?) at MangaFox', str(soup))
-    chaptername = search.group(1)
+    try:
+        chaptername = search.group(1)
+    except AttributeError:
+        logging.debug("No Chapter name provided")
+        chaptername = ""
     return chaptername
 
 
@@ -65,7 +69,7 @@ def getChapter(url):
     #soup = BeautifulSoup(page.content, 'html.parser')
 
     #Get Manga Titel
-    search =re.search('/c(.*?)/', str(url))
+    search = re.search('/c(.*?)/', str(url))
     chapter = search.group(1)
     return chapter
 
@@ -111,4 +115,3 @@ def getImageUrl(pageurl):
 
     imageurl = var1['src']
     return imageurl
-    pass
