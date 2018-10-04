@@ -38,6 +38,7 @@ class M2em:
 
         # Check if Database exists, else create
         if not os.path.isfile(self.config["Database"]):
+            helper.createFolder(self.config["SaveLocation"])
             helper.createDB()
 
 

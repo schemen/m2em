@@ -147,7 +147,7 @@ For the sending to work, you need to have an email account so the program can se
 ```
 [CONFIG]
 # Location relative to the code position
-SaveLocation = comic/
+SaveLocation = data/
 # Database name
 Database = main.db
 # Duration the program sleeps after one run is finished in seconds

@@ -5,6 +5,7 @@ _test.db
 test.db
 __pycache__
 comic/*
+data/*
 kindlegen.exe
 .idea
 venv
