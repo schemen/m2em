@@ -75,6 +75,9 @@ class M2em:
         parser.add_argument("--download",
                             help="Downloads Chapter directly by chapter ID. Multiple IDs can be given",
                             default=[], nargs='*',)
+        parser.add_argument("-p","--process",
+                            help="Processes chapter(s) by chapter ID, Download, convert, send. Multiple IDs can be given",
+                            default=[], nargs='*',)                            
         parser.add_argument("-a", "--action",
                             help="Start action. Options are: rssparser (collecting feed data), downloader, converter or sender ")
         parser.add_argument("-ss", "--switch-send",
@@ -121,6 +124,7 @@ class M2em:
                          self.args.download,
                          self.args.convert,
                          self.args.send,
+                         self.args.process,
                          self.args.start,]):
             logging.error("At least one argument is required!")
 
@@ -270,6 +274,11 @@ class M2em:
         mdownloader.directDownloader(self.config, self.args.download)
 
 
+    def process_chapter(self):
+        mdownloader.directDownloader(self.config, self.args.process)
+        mconverter.directConverter(self.config, self.args.process)
+        msender.directSender(self.config, self.args.process)
+
     '''
     This are the worker, one round
     '''
@@ -362,6 +371,9 @@ class M2em:
             self.convert_chapter()
             return
 
+        if self.args.process:
+            self.process_chapter()
+            return
 
         # Mainloop
         if self.args.start:
