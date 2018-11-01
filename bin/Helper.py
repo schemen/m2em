@@ -11,6 +11,7 @@ import bin.Config as Config
 from bin.Models import *
 import bin.sourceparser.Mangastream as msparser
 import bin.sourceparser.Mangafox as mxparser
+import bin.sourceparser.Cdmnet as cdmparser
 
 '''
 
@@ -475,7 +476,27 @@ def getMangaData(url, entry):
 
         mangadata = [manganame, pages, chapter, title, chapter_name, chapter_pubDate]
 
+    # CDM Parser
+    elif origin == "cdmnet.com.br":
+        logging.debug("Getting Mangadata from CDM. for %s" % url)
 
+        # Easy Stuff
+        title = entry.title
+        chapter_pubDate = entry.published
+
+        # Load page once to hand it over to parser function
+        logging.debug("Loading Page to gather data...")
+        page = requests.get(url)
+
+        # Getting the data
+        manganame = cdmparser.getTitle(page)
+        pages = cdmparser.getPages(page)
+        chapter = cdmparser.getChapter(url)
+        chapter_name = cdmparser.getChapterName(page)
+
+        logging.debug("Mangadata succesfully loaded")
+
+        mangadata = [manganame, pages, chapter, title, chapter_name, chapter_pubDate]
     else:
         logging.error("Not supportet origin!")
 

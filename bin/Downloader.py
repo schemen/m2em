@@ -6,6 +6,7 @@ import bin.Config as Config
 import bin.Helper as helper
 import bin.sourceparser.Mangastream as msparser
 import bin.sourceparser.Mangafox as mxparser
+import bin.sourceparser.Cdmnet as cdmparser
 from PIL import Image
 from PIL import ImageOps
 from PIL import ImageFilter
@@ -99,6 +100,24 @@ class Downloader:
                 for i in urllist:
                     counter = counter + 1
                     self.downloader(i, counter, mxparser.getImageUrl)
+
+
+            # Finish :)
+            logging.info("Finished download of %s!", self.mangatitle)
+
+        # CDM Parser
+        elif self.origin == "cdmnet.com.br":
+            urllist = cdmparser.getPagesUrl(self.mangastarturl, self.mangapages)
+            
+            # check if we have images to download
+            if not len(urllist) == 0:
+
+                # Turn Manga pages into Image links!
+                logging.info("Starting download of %s...", self.mangatitle)
+                counter = 0
+                for i in urllist:
+                    counter = counter + 1
+                    self.downloader(i, counter, cdmparser.getImageUrl)
 
 
             # Finish :)
