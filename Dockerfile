@@ -19,11 +19,6 @@ RUN wget http://kindlegen.s3.amazonaws.com/kindlegen_linux_2.6_i386_v2_9.tar.gz 
     tar xvf /tmp/kindlegen.tar.gz -C /tmp && mv /tmp/kindlegen /usr/bin && \
     rm -r /tmp/*
 
-ENV SMTPServer=mail.example.com
-ENV ServerPort=587
-ENV EmailAddress=comic@example.com
-ENV EmailAddressPw=SecurePW
-ENV ServerStartSSL=True
 
 COPY . .
 
