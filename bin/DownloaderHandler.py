@@ -7,7 +7,7 @@ from bin.Downloader import Downloader
 '''
 downloadHandler
 '''
-def downloader(config, args):
+def downloader(args):
     
     # Make the query
     chapters = helper.getChapters()
@@ -22,7 +22,7 @@ def downloader(config, args):
 
         # Initialize Downloader class & load basic params
         current_chapter = Downloader()
-        current_chapter.data_collector(config,chapter)
+        current_chapter.data_collector(chapter)
 
 
         # Check if the old DL location is being used and fix it!
@@ -36,7 +36,7 @@ def downloader(config, args):
 
 
         # Check if chapter needs to be downloaded
-        if helper.verifyDownload(config, chapter):
+        if helper.verifyDownload(chapter):
             logging.debug("Manga %s downloaded already!" % current_chapter.mangatitle)
         else:
 
@@ -51,7 +51,7 @@ def downloader(config, args):
                     logging.debug("%s is older than 24h, will not be processed by daemon." % current_chapter.mangatitle)
 
 
-def directDownloader(config, chapterids=[]):
+def directDownloader(chapterids=[]):
 
     logging.debug("Following Chapters are directly converted:")
     logging.debug(chapterids)
@@ -75,7 +75,7 @@ def directDownloader(config, chapterids=[]):
 
             # Initialize Downloader class & load basic params
             current_chapter = Downloader()
-            current_chapter.data_collector(config, chapter)
+            current_chapter.data_collector(chapter)
 
             # Check if the old DL location is being used and fix it!
             oldlocation = str(current_chapter.saveloc + current_chapter.mangatitle)
@@ -86,7 +86,7 @@ def directDownloader(config, chapterids=[]):
                 move(oldlocation, newlocation)
 
             # Check if chapter needs to be downloaded
-            if helper.verifyDownload(config, chapter):
+            if helper.verifyDownload(chapter):
                 logging.info("Manga %s downloaded already!" % current_chapter.mangatitle)
             else:
 

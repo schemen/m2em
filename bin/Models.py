@@ -1,10 +1,10 @@
 from peewee import *
 import configparser
+import bin.Config as Config
 
 
-config_reader = configparser.ConfigParser()
-config_reader.read("config.ini")
-config = config_reader["CONFIG"]
+# Load config right at the start
+config = Config.load_config()
 
 db = SqliteDatabase(config['Database'])
 

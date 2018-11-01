@@ -7,6 +7,7 @@ import texttable
 import requests
 import validators
 from urllib.parse import urlparse
+import bin.Config as Config
 from bin.Models import *
 import bin.sourceparser.Mangastream as msparser
 import bin.sourceparser.Mangafox as mxparser
@@ -19,7 +20,10 @@ import bin.sourceparser.Mangafox as mxparser
 
 '''
 
-
+# Load config right at the start
+config = None
+if not config:
+    config = Config.load_config()
 
 
 '''
@@ -525,7 +529,7 @@ def checkTime(time):
 Verify if chapter has been downloaded
 Returns: true or false
 '''
-def verifyDownload(config, chapter):
+def verifyDownload(chapter):
 
     saveloc = config["SaveLocation"]
     mangapages = chapter.pages

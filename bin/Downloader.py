@@ -2,6 +2,7 @@ import logging
 import os
 import requests
 from shutil import move
+import bin.Config as Config
 import bin.Helper as helper
 import bin.sourceparser.Mangastream as msparser
 import bin.sourceparser.Mangafox as mxparser
@@ -27,8 +28,12 @@ class Downloader:
 
 
 
-    def data_collector(self, config, chapter):
-        
+    def data_collector(self, chapter):
+        # Load config right at the start
+        config = None
+        if not config:
+            config = Config.load_config()
+
         # Load configs required here
         self.database = config["Database"]
         self.saveloc = config["SaveLocation"]

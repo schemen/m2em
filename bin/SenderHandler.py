@@ -8,7 +8,7 @@ try:
 except ImportError:
     from io import StringIO
 
-def SenderHandler(config, args):
+def SenderHandler(args):
     """ Function that handles the sending of ebooks when a loop is called """
 
     # Get all Chapters
@@ -28,7 +28,7 @@ def SenderHandler(config, args):
 
         # Initiate Sender class and fill it with data
         current_sender = Sender()
-        current_sender.data_collector(config, chapter)
+        current_sender.data_collector(chapter)
         current_sender.users = users
 
         # Check if ebook has been converted yet, else skip
@@ -56,7 +56,7 @@ def SenderHandler(config, args):
                                       current_sender.mangatitle)
 
 
-def directSender(config, chapterids=[]):
+def directSender(chapterids=[]):
     """ Function that handles the coordination of directly sending ebooks """
 
     logging.debug("Following Chapters are directly sent:")
@@ -81,7 +81,7 @@ def directSender(config, chapterids=[]):
 
             # Initiate Sender class and fill it with data
             current_sender = Sender()
-            current_sender.data_collector(config, chapter)
+            current_sender.data_collector(chapter)
             current_sender.users = users
 
             # Check if ebook has been converted yet, else skip
