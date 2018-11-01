@@ -3,7 +3,7 @@ import os
 import bin.Helper as helper
 from bin.Converter import Converter
 
-def ConverterHandler(config, args):
+def ConverterHandler(args):
     """ Function that handles the Converter in a loop """
 
     # Load Chapters!
@@ -15,14 +15,14 @@ def ConverterHandler(config, args):
 
 
         # Verify if chapter has been downloaded already
-        if not helper.verifyDownload(config, chapter):
+        if not helper.verifyDownload(chapter):
             logging.debug("Manga %s has not been downloaded!", chapter.title)
         else:
 
 
             # Spawn an Converter Object & get basic data from database & config
             current_conversation = Converter()
-            current_conversation.data_collector(config, chapter)
+            current_conversation.data_collector(chapter)
 
             # Check if Download loop & Download task is selected
             if not args.start:
@@ -41,7 +41,7 @@ def ConverterHandler(config, args):
 
 
 
-def directConverter(config, chapterids=[]):
+def directConverter(chapterids=[]):
     """ Function that handles direct calls of the Converter """
 
     logging.debug("Following Chapters are directly converted:")
@@ -57,14 +57,14 @@ def directConverter(config, chapterids=[]):
         for chapter in chapters:
 
             # Verify if chapter has been downloaded already
-            if not helper.verifyDownload(config, chapter):
+            if not helper.verifyDownload(chapter):
                 logging.info("Manga %s has not been downloaded!", chapter[2])
             else:
 
 
                 # Spawn an Converter Object & get basic data from database & config
                 current_conversation = Converter()
-                current_conversation.data_collector(config, chapter)
+                current_conversation.data_collector(chapter)
 
                 if os.path.exists(current_conversation.cbzlocation):
                     logging.info("Manga %s converted to CBZ already!",

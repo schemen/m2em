@@ -26,7 +26,7 @@ class Manga:
 
         # Check if link is already in DB to make sure only data gets downloaded that is not yet downloaded
         logging.debug("Checking if chapter is already saved...")
-        db.get_conn()
+        db.connection()
         self.duplicated = Chapter.select().where(Chapter.url==self.chapter_link)
 
         if self.duplicated.exists():
@@ -68,7 +68,7 @@ class Manga:
             logging.debug("Manga is already in Database! Skipping...")
         else:
             logging.info("Saving Chapter Data for %s", self.title)
-            db.get_conn()
+            db.connection()
             chapter = Chapter()
             chapter.chapter = self.chapter
             chapter.date = self.chapter_pubDate

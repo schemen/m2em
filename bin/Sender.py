@@ -7,6 +7,7 @@ from email.mime.base import MIMEBase
 from email.utils import formatdate, make_msgid
 from email.generator import Generator
 from email import encoders
+import bin.Config as Config
 import bin.Helper as helper
 
 try:
@@ -40,16 +41,21 @@ class Sender:
 
 
 
-    def data_collector(self, config, chapter):
+    def data_collector(self, chapter):
         """ Method that gathers data required for this class """
+
+        # Load config right at the start
+        config = None
+        if not config:
+            config = Config.load_config()
 
         # Load configs required here
         self.saveloc = config["SaveLocation"]
         self.ebformat = config["EbookFormat"]
         self.smtpserver = config["SMTPServer"]
         self.serverport = config["ServerPort"]
-        self.emailadress = config["EmailAdress"]
-        self.password = config["EmailAdressPw"]
+        self.emailadress = config["EmailAddress"]
+        self.password = config["EmailAddressPw"]
         self.starttls = config["ServerStartSSL"]
 
 

@@ -9,11 +9,11 @@ from bin.Models import *
 ssl._create_default_https_context = ssl._create_unverified_context
 
 
-def RssParser(config):
+def RssParser():
     """ Function that handles the coordination of rss parsing """
 
     # Get all feeds
-    db.get_conn()
+    db.connection()
     rssdata = Feeds.select().execute()
 
     logging.info("Checking for new Feed Data...")

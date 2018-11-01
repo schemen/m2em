@@ -3,6 +3,7 @@ import logging
 import os
 import zipfile
 import subprocess
+import bin.Config as Config
 import bin.Helper as helper
 
 
@@ -22,8 +23,13 @@ class Converter:
 
 
 
-    def data_collector(self, config, chapter):
+    def data_collector(self, chapter):
         """ Method that collects data"""
+
+        # Load config right at the start
+        config = None
+        if not config:
+            config = Config.load_config()
 
         # Load configs required here
         self.saveloc = config["SaveLocation"]

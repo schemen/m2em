@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 '''
 
-        MangaFox Parser
+        CDM Parser
 
 
 '''
@@ -18,14 +18,15 @@ get Manga Title
 Returns: title
 '''
 def getTitle(page):
+    title = None
     soup = BeautifulSoup(page.content, 'html.parser')
 
     #Get Manga Titel
-    var = soup.findAll("h2")
-    step1 = ''.join(var[0].findAll(text=True))
-    step2 = step1.split()
-    step3 = step2[:-3]
-    title = ' '.join(step3)
+    search = re.search('<meta content="(.*?) -.*?property="og:title">', str(soup))
+    try:
+        title = search.group(1)
+    except AttributeError:
+        logging.error("No Title Fount!")
 
     return title
 
@@ -35,15 +36,9 @@ get Manga Chapter name
 Returns: Chapter name
 '''
 def getChapterName(page):
-    soup = BeautifulSoup(page.content, 'html.parser')
 
-    #Get Manga Titel
-    search = re.search(': (.*?) at MangaFox', str(soup))
-    try:
-        chaptername = search.group(1)
-    except AttributeError:
-        logging.debug("No Chapter name provided")
-        chaptername = ""
+    logging.debug("CDM has no Chapternames")
+    chaptername = ""
     return chaptername
 
 
@@ -55,7 +50,7 @@ def getPages(page):
     soup = BeautifulSoup(page.content, 'html.parser')
 
     #Get Manga Titel
-    search =re.search('var total_pages=(.*?);', str(soup))
+    search =re.search("var pages = \[.*'(.*?)',];", str(soup))
     pages = search.group(1)
     return pages
 
@@ -68,8 +63,7 @@ Returns: integer chapter
 def getChapter(url):
     #soup = BeautifulSoup(page.content, 'html.parser')
 
-    #Get Manga Titel
-    search = re.search('/c(.*?)/', str(url))
+    search = re.search('ler-online/(.*?)\Z', str(url))
     chapter = search.group(1)
     return chapter
 
@@ -83,16 +77,10 @@ def getPagesUrl(starturl,pages):
     # Split URL to create list
     parsed = urlparse(starturl)
 
-    # get url loc
-    urlpath = parsed.path
-
     # start url generator
     for page in range(pages):
         page = page + 1
-        urlpathsplit = urlpath.split("/")
-        urlpathsplit[-1] = str(page)
-        fullurllocation = "/".join(urlpathsplit)
-        fullurl = parsed.scheme + "://" + parsed.netloc + fullurllocation + ".html"
+        fullurl = parsed.scheme + "://" + parsed.netloc + parsed.path + "#" + str(page)
         pagesurllist.append(fullurl)
 
     logging.debug("All pages:")
@@ -108,10 +96,16 @@ Returns: urllist
 def getImageUrl(pageurl):
     # Download Page
     page = requests.get(pageurl)
-
-    #Pass page to parser
     soup = BeautifulSoup(page.content, 'html.parser')
-    var1 = soup.find(id='image')
 
-    imageurl = var1['src']
+    # Get CDN URL suffix
+    search =re.search("var urlSulfix = '(.*?)';", str(soup))
+    cdnsuffix = search.group(1)
+
+    # Get pagenumber 
+    var = re.search('ler-online/.*?#(.*?)\Z', str(pageurl))
+    pagenumber = var.group(1).zfill(2)
+
+
+    imageurl = str(cdnsuffix + pagenumber + ".jpg")
     return imageurl

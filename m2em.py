@@ -4,11 +4,11 @@ import sys
 import logging
 import time
 import argparse
-import configparser
 import datetime
 import validators
 from bin._version import __version__
 # Start of the fun!
+import bin.Config as Config
 import bin.Helper as helper
 import bin.RssParser as mparser
 import bin.DownloaderHandler as mdownloader
@@ -34,10 +34,13 @@ class M2em:
         # Load config right at the start
         self.config = None
         if not self.config:
-            self.read_config()
+            self.config = Config.load_config()
+            logging.debug("Loaded Config:")
+            logging.debug(self.config)
 
         # Check if Database exists, else create
         if not os.path.isfile(self.config["Database"]):
+            helper.createFolder(self.config["SaveLocation"])
             helper.createDB()
 
 
@@ -74,6 +77,9 @@ class M2em:
         parser.add_argument("--download",
                             help="Downloads Chapter directly by chapter ID. Multiple IDs can be given",
                             default=[], nargs='*',)
+        parser.add_argument("-p","--process",
+                            help="Processes chapter(s) by chapter ID, Download, convert, send. Multiple IDs can be given",
+                            default=[], nargs='*',)                            
         parser.add_argument("-a", "--action",
                             help="Start action. Options are: rssparser (collecting feed data), downloader, converter or sender ")
         parser.add_argument("-ss", "--switch-send",
@@ -120,23 +126,11 @@ class M2em:
                          self.args.download,
                          self.args.convert,
                          self.args.send,
+                         self.args.process,
                          self.args.start,]):
             logging.error("At least one argument is required!")
 
         logging.debug("Passed arguments: \n %s", self.args)
-
-
-    def read_config(self):
-        """ Reads the config """
-
-        logging.debug("Loading configuration")
-        config_reader = configparser.ConfigParser()
-        config_reader.read("config.ini")
-        self.config = config_reader["CONFIG"]
-
-        logging.debug("Loaded Config:")
-        logging.debug(self.config)
-
 
 
     '''
@@ -258,35 +252,40 @@ class M2em:
     direct callers
     '''
     def send_chapter(self):
-        msender.directSender(self.config, self.args.send)
+        msender.directSender(self.args.send)
 
 
     def convert_chapter(self):
-        mconverter.directConverter(self.config, self.args.convert)
+        mconverter.directConverter(self.args.convert)
 
 
     def download_chapter(self):
-        mdownloader.directDownloader(self.config, self.args.download)
+        mdownloader.directDownloader(self.args.download)
 
+
+    def process_chapter(self):
+        mdownloader.directDownloader(self.args.process)
+        mconverter.directConverter(self.args.process)
+        msender.directSender(self.args.process)
 
     '''
     This are the worker, one round
     '''
     #  Worker to get and parse  rss feeds
     def parse_add_feeds(self):
-        mparser.RssParser(self.config)
+        mparser.RssParser()
 
     # Worker to fetch all images
     def images_fetcher(self):
-        mdownloader.downloader(self.config, self.args)
+        mdownloader.downloader(self.args)
 
     # Worker to convert all downloaded chapters into ebooks
     def image_converter(self):
-        mconverter.ConverterHandler(self.config, self.args)
+        mconverter.ConverterHandler(self.args)
 
     # Worker to convert all downloaded chapters into ebooks
     def send_ebooks(self):
-        msender.SenderHandler(self.config, self.args)
+        msender.SenderHandler(self.args)
 
 
 
@@ -361,6 +360,9 @@ class M2em:
             self.convert_chapter()
             return
 
+        if self.args.process:
+            self.process_chapter()
+            return
 
         # Mainloop
         if self.args.start:

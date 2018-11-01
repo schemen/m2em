@@ -11,6 +11,12 @@ Not living in Japan has me not really having any readable access of weekly chapt
 
 M2em let's you automatically download Mangas via RSS Feed that updates at a configurable interval (and comics in the future?), convert them into eMangas and send them off via Email (Target being the Email to Kindle function of Amazon)!
 
+## Supported Websites
+
+* Mangastream
+* MangaFox
+* Cdmnet
+
 # Setup
 
 M2em requires Python3 and I highly recommend working in a virtualenv. Some OS require the python-dev package!
@@ -39,6 +45,24 @@ deactivate
 
 Get Kindlegen here: https://www.amazon.com/gp/feature.html?docId=1000765211
 
+## Docker Setup
+You can use the Dockerfile or the image schemen/m2em. All options in the config.ini are available as environment variable. Make sure you write the exactly the same!
+
+Example Compose file:
+```
+version: '2'
+services:
+  m2em:
+    image: schemen/m2em:latest
+    environment:
+     - SMTPServer=mail.example.com
+     - EmailAddress=comic@example.com
+     - EmailAddressPw=verysecurepassword
+    volumes:
+     - <DATA_DIRECTORY>:/usr/src/app/data
+
+``` 
+
 ## Concept
 As a concept, M2em has different workers that run in a loop. All Chapter/user data is saved in a SQLite3 Database.
 * RssParser - Parsing the RSS feed and saving the information of each chapter
@@ -64,15 +88,16 @@ Example: if you wish to download all chapters you have saved in your database, y
 You can directly apply an action to one chapter with the options --download, --convert or --send. You need to pass
 the ID of said chapter, you can find that out with "-Lc" or "-lc".
 You can pass multiple IDs.
-Example:
+
+Also, you can process N chapters with the "--process/-p" option:
+```
+./m2em.py -p 100 #Downloads, Converts and Sends chapter with ID 100
+```
+
+
 ```
 ./m2em.py --download 100 #Downloads chapter with ID 100
 ```
-
-
-## Supported Websites
-* Mangastream
-* MangaFox
 
 # Usage
 
@@ -81,9 +106,10 @@ Example:
 usage: m2em.py [-h] [-af ADD_FEED] [-au] [-lm [LIST_MANGA]] [-lc] [-Lc] [-lf]
                [-lu] [-cd] [-s] [--send [SEND [SEND ...]]]
                [--convert [CONVERT [CONVERT ...]]]
-               [--download [DOWNLOAD [DOWNLOAD ...]]] [-a ACTION]
-               [-ss SWITCH_SEND] [-sc SWITCH_CHAPTER] [-dc DELETE_CHAPTER]
-               [-du DELETE_USER] [-df DELETE_FEED] [--daemon] [-d] [-v]
+               [--download [DOWNLOAD [DOWNLOAD ...]]]
+               [-p [PROCESS [PROCESS ...]]] [-a ACTION] [-ss SWITCH_SEND]
+               [-dc DELETE_CHAPTER] [-du DELETE_USER] [-df DELETE_FEED]
+               [--daemon] [-d] [-v]
 
 Manga to eManga - m2em
 
@@ -112,13 +138,14 @@ optional arguments:
   --download [DOWNLOAD [DOWNLOAD ...]]
                         Downloads Chapter directly by chapter ID. Multiple IDs
                         can be given
+  -p [PROCESS [PROCESS ...]], --process [PROCESS [PROCESS ...]]
+                        Processes chapter(s) by chapter ID, Download, convert,
+                        send. Multiple IDs can be given
   -a ACTION, --action ACTION
                         Start action. Options are: rssparser (collecting feed
                         data), downloader, converter or sender
   -ss SWITCH_SEND, --switch-send SWITCH_SEND
                         Pass ID of User. Switches said user Send eBook status
-  -sc SWITCH_CHAPTER, --switch-chapter SWITCH_CHAPTER
-                        Pass ID of Chapter. Switches said Chapter Sent status
   -dc DELETE_CHAPTER, --delete-chapter DELETE_CHAPTER
                         Pass ID of Chapter. Deletes said Chapter
   -du DELETE_USER, --delete-user DELETE_USER
@@ -147,7 +174,7 @@ For the sending to work, you need to have an email account so the program can se
 ```
 [CONFIG]
 # Location relative to the code position
-SaveLocation = comic/
+SaveLocation = data/
 # Database name
 Database = main.db
 # Duration the program sleeps after one run is finished in seconds
@@ -201,7 +228,6 @@ If you wish to disable/enable sending status of a user, use the -ss command
 ```
 ./m2em.py -ss <USERID>
 ```
-
 
 
 ### A complete run with nothing happening:

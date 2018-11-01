@@ -7,9 +7,11 @@ import texttable
 import requests
 import validators
 from urllib.parse import urlparse
+import bin.Config as Config
 from bin.Models import *
 import bin.sourceparser.Mangastream as msparser
 import bin.sourceparser.Mangafox as mxparser
+import bin.sourceparser.Cdmnet as cdmparser
 
 '''
 
@@ -19,7 +21,10 @@ import bin.sourceparser.Mangafox as mxparser
 
 '''
 
-
+# Load config right at the start
+config = None
+if not config:
+    config = Config.load_config()
 
 
 '''
@@ -36,7 +41,7 @@ def setIsSent(mangaid):
 
     try:
         # Open DB
-        db.get_conn()
+        db.connection()
         query = Chapter.update(issent=1).where(Chapter.chapterid == mangaid)
         query.execute()
         logging.debug("Set chapter with ID %s as sent", mangaid)
@@ -53,7 +58,7 @@ Returns: N/A
 def writeFeed(url):
 
     # Connect to DB
-    db.get_conn()
+    db.connection()
 
     # Insert Data
     feed = Feeds.create(url=url)
@@ -76,7 +81,7 @@ def printFeeds():
     table.header(["ID", "URL"])
 
     # Connect
-    db.get_conn()
+    db.connection()
 
     for row in Feeds.select():
         table.add_row([row.feedid, row.url])
@@ -102,7 +107,7 @@ def printUsers():
                           't'])  # text
     table.header(["ID", "USERNAME", "EMAIL", "KINDLE EMAIL", "SEND EBOOK"])
 
-    db.get_conn()
+    db.connection()
     for user in User.select():
         if user.sendtokindle == 1:
             sendstatus = "YES"
@@ -121,7 +126,7 @@ Returns: N/A
 def printChaptersAll():
 
     # Make the query
-    db.get_conn()
+    db.connection()
     chapters = Chapter.select().order_by(Chapter.chapterid)
     db.close()
 
@@ -200,7 +205,7 @@ def createUser():
         sendToKindle = "0"
 
     # Save data now!
-    db.get_conn()
+    db.connection()
     newuser = User.create(email=email, name=username, sendtokindle=sendToKindle, kindle_mail=kindlemail)
 
     try:
@@ -220,7 +225,7 @@ def switchUserSend(userid):
     user = ""
 
     # Get User
-    db.get_conn()
+    db.connection()
     try:
         user = User.get(User.userid == userid)
     except DoesNotExist:
@@ -254,7 +259,7 @@ Delete User!
 def deleteUser(userid):
 
     # Get User
-    db.get_conn()
+    db.connection()
 
     try:
         user = User.get(User.userid == userid)
@@ -274,7 +279,7 @@ Delete Chapter!
 def deleteChapter(chapterid):
 
     # Get Chapter
-    db.get_conn()
+    db.connection()
 
     try:
         chapter = Chapter.get(Chapter.chapterid == chapterid)
@@ -292,7 +297,7 @@ Delete Feed!
 def deleteFeed(feedid):
 
     # Get Feed
-    db.get_conn()
+    db.connection()
 
     try:
         feed = Feeds.get(Feeds.feedid == feedid)
@@ -310,7 +315,7 @@ Returns: N/A
 def printChapters():
 
     # Make the query
-    db.get_conn()
+    db.connection()
     chapters = Chapter.select().order_by(-Chapter.chapterid).limit(10)
     db.close()
 
@@ -344,7 +349,7 @@ Returns: feeds
 def getFeeds():
 
     # Make the query
-    db.get_conn()
+    db.connection()
     feeds = Feeds.select()
     db.close()
 
@@ -359,7 +364,7 @@ Returns: __chapterdata
 def getChapters():
 
     # Make the query
-    db.get_conn()
+    db.connection()
     chapters = Chapter.select()
 
     return chapters
@@ -373,7 +378,7 @@ def getChaptersFromID(chapterids):
 
 
     chapterdata = []
-    db.get_conn()
+    db.connection()
 
     for i in chapterids:
         # Get Data
@@ -398,7 +403,7 @@ Returns: __userdata
 def getUsers():
 
     # Make the query
-    db.get_conn()
+    db.connection()
     users = User.select()
 
     return users
@@ -450,8 +455,8 @@ def getMangaData(url, entry):
         mangadata = [manganame, pages, chapter, title, chapter_name, chapter_pubDate]
 
     # Mangafox Parser
-    elif origin == "mangafox.me" or origin == "mangafox.la":
-        logging.debug("Getting Mangadata from Mangafox.me for %s" % url)
+    elif origin == "mangafox.me" or origin == "mangafox.la" or origin == "fanfox.net":
+        logging.debug("Getting Mangadata from Mangafox. for %s" % url)
 
         # Easy Stuff
         title = entry.title
@@ -471,7 +476,27 @@ def getMangaData(url, entry):
 
         mangadata = [manganame, pages, chapter, title, chapter_name, chapter_pubDate]
 
+    # CDM Parser
+    elif origin == "cdmnet.com.br":
+        logging.debug("Getting Mangadata from CDM. for %s" % url)
 
+        # Easy Stuff
+        title = entry.title
+        chapter_pubDate = entry.published
+
+        # Load page once to hand it over to parser function
+        logging.debug("Loading Page to gather data...")
+        page = requests.get(url)
+
+        # Getting the data
+        manganame = cdmparser.getTitle(page)
+        pages = cdmparser.getPages(page)
+        chapter = cdmparser.getChapter(url)
+        chapter_name = cdmparser.getChapterName(page)
+
+        logging.debug("Mangadata succesfully loaded")
+
+        mangadata = [manganame, pages, chapter, title, chapter_name, chapter_pubDate]
     else:
         logging.error("Not supportet origin!")
 
@@ -525,7 +550,7 @@ def checkTime(time):
 Verify if chapter has been downloaded
 Returns: true or false
 '''
-def verifyDownload(config, chapter):
+def verifyDownload(chapter):
 
     saveloc = config["SaveLocation"]
     mangapages = chapter.pages
