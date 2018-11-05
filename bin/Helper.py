@@ -534,7 +534,13 @@ Check if time is older than 24h
 Returns: true or false
 '''
 def checkTime(time):
-    objecttime = datetime.datetime.strptime(time, "%a, %d %b %Y %H:%M:%S %z")
+    # Some feeds don't deliver a timezone value, inject Zulu
+    try:
+        objecttime = datetime.datetime.strptime(time, "%a, %d %b %Y %H:%M:%S %z")
+    except ValueError:
+        time = time + " +0000"
+        objecttime = datetime.datetime.strptime(time, "%a, %d %b %Y %H:%M:%S %z")
+
     now = datetime.datetime.now(datetime.timezone.utc)
 
     delta = now - objecttime
