@@ -137,8 +137,16 @@ class Downloader:
 
         # Download the image!
         f = open(tempdl, 'wb')
-        f.write(requests.get(parser(url)).content)
+        f.write(requests.get(parser(url), headers={'referer': url}).content)
         f.close()
+
+        # convert img to png
+        imgtest = Image.open(tempdl)
+        if imgtest.format != 'PNG':
+            logging.debug("Image %s is not a PNG... convertig.", tempdl)
+            imgtest.save(tempdl, "PNG")
+        else:
+            imgtest.close()
 
         # If everything is alright, write image to final name
         os.rename(tempdl, imagepath)
