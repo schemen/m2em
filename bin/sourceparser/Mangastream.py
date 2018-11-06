@@ -1,3 +1,4 @@
+""" Mangastream Parser Module """
 #!/usr/bin/env python
 import logging
 import re

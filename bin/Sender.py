@@ -1,3 +1,4 @@
+""" Sending Module """
 import logging
 import os
 import smtplib

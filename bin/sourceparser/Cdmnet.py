@@ -1,8 +1,9 @@
 #!/usr/bin/env python
+""" Cdmnet Parsing Module """
 import logging
 import re
-import requests
 from urllib.parse import urlparse
+import requests
 from bs4 import BeautifulSoup
 
 '''

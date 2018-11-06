@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+""" Converter Module """
 import logging
 import os
 import zipfile
@@ -8,7 +9,7 @@ import bin.Helper as helper
 
 
 class Converter:
-    """ This Class Converts the result of the Downloader class into Ebooks"""
+    """ This Class Converts the result of the Downloader class into Ebooks """
 
     def __init__(self):
         self.saveloc = None
@@ -24,7 +25,7 @@ class Converter:
 
 
     def data_collector(self, chapter):
-        """ Method that collects data"""
+        """ Method that collects data """
 
         # Load config right at the start
         config = None

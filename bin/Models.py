@@ -1,5 +1,5 @@
+""" Models Module """
 from peewee import *
-import configparser
 import bin.Config as Config
 
 
