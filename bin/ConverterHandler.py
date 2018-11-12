@@ -1,3 +1,4 @@
+""" Module that handles the workflow of the Converter Class """
 import logging
 import os
 import bin.Helper as helper

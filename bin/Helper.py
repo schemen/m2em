@@ -18,7 +18,6 @@ import bin.sourceparser.Cdmnet as cdmparser
     Helper Unit.
     This File provides functions to other classes
 
-
 '''
 
 # Load config right at the start
@@ -434,7 +433,7 @@ def getMangaData(url, entry):
     # Mangastream Parser
     if origin == "mangastream.com" or origin == "readms.net":
 
-        logging.debug("Getting Mangadata from Mangastream.com for %s" % url)
+        logging.debug("Getting Mangadata from Mangastream.com for %s", url)
 
         # Easy Stuff
         title = entry.title
@@ -456,7 +455,7 @@ def getMangaData(url, entry):
 
     # Mangafox Parser
     elif origin == "mangafox.me" or origin == "mangafox.la" or origin == "fanfox.net":
-        logging.debug("Getting Mangadata from Mangafox. for %s" % url)
+        logging.debug("Getting Mangadata from Mangafox. for %s", url)
 
         # Easy Stuff
         title = entry.title
@@ -478,7 +477,7 @@ def getMangaData(url, entry):
 
     # CDM Parser
     elif origin == "cdmnet.com.br":
-        logging.debug("Getting Mangadata from CDM. for %s" % url)
+        logging.debug("Getting Mangadata from CDM. for %s", url)
 
         # Easy Stuff
         title = entry.title
@@ -511,9 +510,9 @@ Function to create folders
 def createFolder(folder):
     if not os.path.exists(folder):
         os.makedirs(folder)
-        logging.debug("Folder %s Created!" % folder)
+        logging.debug("Folder %s Created!", folder)
     else:
-        logging.debug("Folder %s Exists!" % folder)
+        logging.debug("Folder %s Exists!", folder)
 
 
 '''
@@ -533,8 +532,14 @@ def sanetizeName(name):
 Check if time is older than 24h
 Returns: true or false
 '''
-def checkTime(time):
-    objecttime = datetime.datetime.strptime(time, "%a, %d %b %Y %H:%M:%S %z")
+def checkTime(checktime):
+    # Some feeds don't deliver a timezone value, inject Zulu
+    try:
+        objecttime = datetime.datetime.strptime(checktime, "%a, %d %b %Y %H:%M:%S %z")
+    except ValueError:
+        checktime = checktime + " +0000"
+        objecttime = datetime.datetime.strptime(checktime, "%a, %d %b %Y %H:%M:%S %z")
+
     now = datetime.datetime.now(datetime.timezone.utc)
 
     delta = now - objecttime

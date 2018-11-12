@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+""" Main Wrapper Module """
 import os
 import sys
 import logging
@@ -77,9 +78,9 @@ class M2em:
         parser.add_argument("--download",
                             help="Downloads Chapter directly by chapter ID. Multiple IDs can be given",
                             default=[], nargs='*',)
-        parser.add_argument("-p","--process",
+        parser.add_argument("-p", "--process",
                             help="Processes chapter(s) by chapter ID, Download, convert, send. Multiple IDs can be given",
-                            default=[], nargs='*',)                            
+                            default=[], nargs='*',)
         parser.add_argument("-a", "--action",
                             help="Start action. Options are: rssparser (collecting feed data), downloader, converter or sender ")
         parser.add_argument("-ss", "--switch-send",

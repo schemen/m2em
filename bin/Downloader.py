@@ -1,7 +1,7 @@
+"""Downloader Module"""
 import logging
 import os
 import requests
-from shutil import move
 import bin.Config as Config
 import bin.Helper as helper
 import bin.sourceparser.Mangastream as msparser
@@ -13,6 +13,7 @@ from PIL import ImageFilter
 
 
 class Downloader:
+    """Class to manage downloads"""
 
     def __init__(self):
         self.database = None
@@ -30,6 +31,8 @@ class Downloader:
 
 
     def data_collector(self, chapter):
+        """Method to collect and fill data for the class"""
+
         # Load config right at the start
         config = None
         if not config:
@@ -63,16 +66,16 @@ class Downloader:
 
 
     def data_processor(self):
+        """Method that starts processing the collected data"""
 
-        logging.info("Proccesing data for %s"% self.mangatitle)
+        logging.info("Proccesing data for %s", self.mangatitle)
 
 
         # Get image urls!
         # Mangastream Parser
         if self.origin == "mangastream.com" or self.origin == "readms.net":
-            urllist = msparser.getPagesUrl(self.mangastarturl,self.mangapages)
+            urllist = msparser.getPagesUrl(self.mangastarturl, self.mangapages)
 
-            
             # check if we have images to download
             if not len(urllist) == 0:
 
@@ -90,7 +93,7 @@ class Downloader:
         # Mangafox Parser
         elif self.origin == "mangafox.me" or self.origin == "mangafox.la" or self.origin == "fanfox.net":
             urllist = mxparser.getPagesUrl(self.mangastarturl, self.mangapages)
-            
+
             # check if we have images to download
             if not len(urllist) == 0:
 
@@ -108,7 +111,7 @@ class Downloader:
         # CDM Parser
         elif self.origin == "cdmnet.com.br":
             urllist = cdmparser.getPagesUrl(self.mangastarturl, self.mangapages)
-            
+
             # check if we have images to download
             if not len(urllist) == 0:
 
@@ -124,6 +127,8 @@ class Downloader:
             logging.info("Finished download of %s!", self.mangatitle)
 
     def downloader(self, url, counter, parser):
+        """Method that downloads files"""
+
         # Check if we have the Download folder
         helper.createFolder(self.downloadfolder)
 
@@ -132,8 +137,16 @@ class Downloader:
 
         # Download the image!
         f = open(tempdl, 'wb')
-        f.write(requests.get(parser(url)).content)
+        f.write(requests.get(parser(url), headers={'referer': url}).content)
         f.close()
+
+        # convert img to png
+        imgtest = Image.open(tempdl)
+        if imgtest.format != 'PNG':
+            logging.debug("Image %s is not a PNG... convertig.", tempdl)
+            imgtest.save(tempdl, "PNG")
+        else:
+            imgtest.close()
 
         # If everything is alright, write image to final name
         os.rename(tempdl, imagepath)

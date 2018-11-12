@@ -1,14 +1,14 @@
+""" Module to handle the workflow of with the Downloader Class """
 import logging
 import os
 from shutil import move
 import bin.Helper as helper
 from bin.Downloader import Downloader
 
-'''
-downloadHandler
-'''
+
 def downloader(args):
-    
+    """ the downloader function """
+
     # Make the query
     chapters = helper.getChapters()
 
@@ -29,7 +29,7 @@ def downloader(args):
         oldlocation = str(current_chapter.saveloc + current_chapter.mangatitle)
         newlocation = str(current_chapter.saveloc + current_chapter.manganame)
         if os.path.isdir(oldlocation):
-            logging.info("Moving %s from old DL location to new one..." % current_chapter.mangatitle)
+            logging.info("Moving %s from old DL location to new one...", current_chapter.mangatitle)
             helper.createFolder(newlocation)
             move(oldlocation, newlocation)
 
@@ -37,7 +37,7 @@ def downloader(args):
 
         # Check if chapter needs to be downloaded
         if helper.verifyDownload(chapter):
-            logging.debug("Manga %s downloaded already!" % current_chapter.mangatitle)
+            logging.debug("Manga %s downloaded already!", current_chapter.mangatitle)
         else:
 
             # Check if Download loop & Download task is selected
@@ -48,11 +48,11 @@ def downloader(args):
                 if  helper.checkTime(current_chapter.chapterdate):
                     current_chapter.data_processor()
                 else:
-                    logging.debug("%s is older than 24h, will not be processed by daemon." % current_chapter.mangatitle)
+                    logging.debug("%s is older than 24h, will not be processed by daemon.", current_chapter.mangatitle)
 
 
 def directDownloader(chapterids=[]):
-
+    """ Function to handle direct download calls """
     logging.debug("Following Chapters are directly converted:")
     logging.debug(chapterids)
 
@@ -81,13 +81,13 @@ def directDownloader(chapterids=[]):
             oldlocation = str(current_chapter.saveloc + current_chapter.mangatitle)
             newlocation = str(current_chapter.saveloc + current_chapter.manganame)
             if os.path.isdir(oldlocation):
-                logging.info("Moving %s from old DL location to new one..." % current_chapter.mangatitle)
+                logging.info("Moving %s from old DL location to new one...", current_chapter.mangatitle)
                 helper.createFolder(newlocation)
                 move(oldlocation, newlocation)
 
             # Check if chapter needs to be downloaded
             if helper.verifyDownload(chapter):
-                logging.info("Manga %s downloaded already!" % current_chapter.mangatitle)
+                logging.info("Manga %s downloaded already!", current_chapter.mangatitle)
             else:
 
                 current_chapter.data_processor()

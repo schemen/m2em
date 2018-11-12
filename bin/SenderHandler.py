@@ -1,12 +1,9 @@
+""" Module to handle the sending workflow """
 import logging
 import os
 import bin.Helper as helper
 from bin.Sender import Sender
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
 
 def SenderHandler(args):
     """ Function that handles the sending of ebooks when a loop is called """

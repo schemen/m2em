@@ -1,7 +1,7 @@
+""" RSS Parsing Module """
 import logging
 import ssl
 import feedparser
-import bin.Helper as helper
 from bin.models.Manga import Manga
 from bin.Models import *
 
