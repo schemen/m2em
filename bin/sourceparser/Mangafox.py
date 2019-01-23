@@ -3,6 +3,7 @@
 import logging
 import re
 from urllib.parse import urlparse
+from requests_html import HTMLSession
 import requests
 from bs4 import BeautifulSoup
 
@@ -19,14 +20,15 @@ get Manga Title
 Returns: title
 '''
 def getTitle(page):
+    title = None
     soup = BeautifulSoup(page.content, 'html.parser')
 
     #Get Manga Titel
-    var = soup.findAll("h2")
-    step1 = ''.join(var[0].findAll(text=True))
-    step2 = step1.split()
-    step3 = step2[:-3]
-    title = ' '.join(step3)
+    search = re.search('content="Read\s(.*?)\smanga online,', str(soup))
+    try:
+        title = search.group(1)
+    except AttributeError:
+        logging.error("No Title Fount!")
 
     return title
 
@@ -56,7 +58,7 @@ def getPages(page):
     soup = BeautifulSoup(page.content, 'html.parser')
 
     #Get Manga Titel
-    search =re.search('var total_pages=(.*?);', str(soup))
+    search =re.search('var imagecount=(.*?);', str(soup))
     pages = search.group(1)
     return pages
 
@@ -108,11 +110,18 @@ Returns: urllist
 '''
 def getImageUrl(pageurl):
     # Download Page
-    page = requests.get(pageurl)
+    #page = requests.get(pageurl)
+    logging.getLogger("pyppeteer").setLevel(logging.WARNING)
+
+
+    session = HTMLSession()
+
+    page = session.get(pageurl)
+    page.html.render()
 
     #Pass page to parser
-    soup = BeautifulSoup(page.content, 'html.parser')
-    var1 = soup.find(id='image')
+    var1 = page.html.find('img.reader-main-img')
+    var2 =re.search("style=\'cursor:pointer\' src=\'//(.*?)\'", str(var1))
 
-    imageurl = var1['src']
+    imageurl = "http://" + var2.group(1)
     return imageurl
