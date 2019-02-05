@@ -6,6 +6,7 @@ import os
 import texttable
 import requests
 import validators
+from dateutil import parser
 from urllib.parse import urlparse
 import bin.Config as Config
 from bin.Models import *
@@ -533,16 +534,17 @@ Check if time is older than 24h
 Returns: true or false
 '''
 def checkTime(checktime):
-    # Some feeds don't deliver a timezone value, inject Zulu
-    try:
-        objecttime = datetime.datetime.strptime(checktime, "%a, %d %b %Y %H:%M:%S %z")
-    except ValueError:
-        checktime = checktime + " +0000"
-        objecttime = datetime.datetime.strptime(checktime, "%a, %d %b %Y %H:%M:%S %z")
+
+
+    dt = parser.parse(checktime)
+
+    # Make sure checktime is TZ aware
+    if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
+        dt = dt.replace(tzinfo=datetime.timezone.utc)
 
     now = datetime.datetime.now(datetime.timezone.utc)
 
-    delta = now - objecttime
+    delta = now - dt
 
     if delta.days == 0:
         return True
