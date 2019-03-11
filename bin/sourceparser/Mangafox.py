@@ -6,6 +6,12 @@ from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
 
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+
+options = Options()
+options.headless = True
+
 '''
 
         MangaFox Parser
@@ -20,13 +26,11 @@ Returns: title
 '''
 def getTitle(page):
     soup = BeautifulSoup(page.content, 'html.parser')
-
     #Get Manga Titel
-    var = soup.findAll("h2")
-    step1 = ''.join(var[0].findAll(text=True))
-    step2 = step1.split()
-    step3 = step2[:-3]
-    title = ' '.join(step3)
+    var = soup.find('meta', attrs=dict(name='og:description'))
+    step1 = var.attrs['content']
+    search = re.search('Read (.*?) manga online.*', step1)
+    title = search.group(1)
 
     return title
 
@@ -55,8 +59,8 @@ Returns: integer pages
 def getPages(page):
     soup = BeautifulSoup(page.content, 'html.parser')
 
-    #Get Manga Titel
-    search =re.search('var total_pages=(.*?);', str(soup))
+    #Get Total Page Count
+    search = re.search('var imagecount=(.*?);', str(soup))
     pages = search.group(1)
     return pages
 
@@ -107,12 +111,17 @@ get Manga Image URL
 Returns: urllist
 '''
 def getImageUrl(pageurl):
+    ff = webdriver.Firefox(options=options)
+
     # Download Page
-    page = requests.get(pageurl)
+    ff.get(pageurl)
+    page_source = ff.page_source
+
+    ff.quit()
 
     #Pass page to parser
-    soup = BeautifulSoup(page.content, 'html.parser')
-    var1 = soup.find(id='image')
+    soup = BeautifulSoup(page_source, 'html.parser')
+    var1 = soup.find('img', attrs={'class': 'reader-main-img'})
 
-    imageurl = var1['src']
+    imageurl = 'http://{}'.format(var1.attrs['src'].lstrip('/'))
     return imageurl
