@@ -26,7 +26,7 @@ Returns: title
 '''
 def getTitle(page):
     soup = BeautifulSoup(page.content, 'html.parser')
-    #Get Manga Titel
+    #Get Manga Title
     var = soup.find('meta', attrs=dict(name='og:description'))
     step1 = var.attrs['content']
     search = re.search('Read (.*?) manga online.*', step1)
@@ -42,7 +42,7 @@ Returns: Chapter name
 def getChapterName(page):
     soup = BeautifulSoup(page.content, 'html.parser')
 
-    #Get Manga Titel
+    #Get Chapter Title
     search = re.search(': (.*?) at MangaFox', str(soup))
     try:
         chaptername = search.group(1)
@@ -73,7 +73,7 @@ Returns: integer chapter
 def getChapter(url):
     #soup = BeautifulSoup(page.content, 'html.parser')
 
-    #Get Manga Titel
+    #Get Chapter URL
     search = re.search('/c(.*?)/', str(url))
     chapter = search.group(1)
     return chapter
