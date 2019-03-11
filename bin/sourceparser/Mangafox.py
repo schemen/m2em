@@ -112,12 +112,22 @@ Returns: urllist
 '''
 def getImageUrl(pageurl):
     ff = webdriver.Firefox(options=options)
-
+    retries = 3
+    success = False
     # Download Page
-    ff.get(pageurl)
-    page_source = ff.page_source
-
-    ff.quit()
+    while retries > 0 and not success:
+        try:
+            ff.get(pageurl)
+            success = True
+        except requests.exceptions.ConnectionError:
+            retries -= 1
+            logging.debug("Had to retry url: {}. Retries left: {}".format(pageurl, retries))
+            continue
+    else:
+        if not success:
+            raise requests.exceptions.ConnectionError('Could not connect to: {}'.format(pageurl))
+        page_source = ff.page_source
+        ff.quit()
 
     #Pass page to parser
     soup = BeautifulSoup(page_source, 'html.parser')
