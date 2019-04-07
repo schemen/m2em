@@ -3,9 +3,9 @@
 import logging
 import re
 from urllib.parse import urlparse
-from requests_html import HTMLSession
 import requests
 from bs4 import BeautifulSoup
+import bin.Config as Config
 
 '''
 
@@ -13,7 +13,9 @@ from bs4 import BeautifulSoup
 
 
 '''
-
+# Splash Rendering Service address
+config = Config.load_config()
+splash_server = config["SplashServer"]
 
 '''
 get Manga Title
@@ -110,18 +112,30 @@ Returns: urllist
 '''
 def getImageUrl(pageurl):
     # Download Page
-    #page = requests.get(pageurl)
-    logging.getLogger("pyppeteer").setLevel(logging.WARNING)
 
+    # Splash LUA script
+    script = """
+    splash.resource_timeout = 5
+    splash:add_cookie{"IsAdult", "1", "/", domain="fanfox.net"}
+    splash:on_request(function(request)
+        if string.find(request.url, "tenmanga.com") ~= nil then
+            request.abort()
+        end
+    end)
+    splash:go(args.url)
+    return splash:html()
+    """
 
-    session = HTMLSession()
-
-    page = session.get(pageurl)
-    page.html.render()
+    logging.debug("Sending rendering request to Splash")
+    resp = requests.post(str(splash_server + "/run"), json={
+        'lua_source': script,
+        'url': pageurl
+    })
+    page = resp.content
 
     #Pass page to parser
-    var1 = page.html.find('img.reader-main-img')
-    var2 =re.search("style=\'cursor:pointer\' src=\'//(.*?)\'", str(var1))
+    var =re.search('style=\"cursor:pointer\" src=\"//(.*?)\"', str(page))
 
-    imageurl = "http://" + var2.group(1)
+    logging.debug(var.group(1))
+    imageurl = "http://" + var.group(1)
     return imageurl

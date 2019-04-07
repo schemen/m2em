@@ -14,12 +14,23 @@ M2em let's you automatically download Mangas via RSS Feed that updates at a conf
 ## Supported Websites
 
 * Mangastream
-* MangaFox
+* MangaFox (With Splash Rendering container)
 * Cdmnet
 
 # Setup
 
-M2em requires Python3 and I highly recommend working in a virtualenv. Some OS require the python-dev package!
+M2em requires Python3 and I highly recommend working in a virtualenv and if you want to use Mangasources which are JavaScript heavy, I actually recommend to use docker to deploy the m2em binary and the rendering service together. Some OS require the python-dev package!
+
+## Docker Setup
+You can use the Dockerfile or the image schemen/m2em. All options in the config.ini are available as environment variable. Make sure you write the exactly the same!
+
+Have a look at the example Compose file in the repository. This will deploy two containers, m2em and splash. Splash is to render websites which use javascript. The alias (which you can add to your bashrc if you want) allows you to directly call the containerized application
+
+```
+docker-compose up -d
+alias m2em='sudo docker exec -it m2em_m2em_1 ./m2em.py'
+m2em -h
+```
 
 ## Create and install virtual environment
 ```x-sh
@@ -45,23 +56,6 @@ deactivate
 
 Get Kindlegen here: https://www.amazon.com/gp/feature.html?docId=1000765211
 
-## Docker Setup
-You can use the Dockerfile or the image schemen/m2em. All options in the config.ini are available as environment variable. Make sure you write the exactly the same!
-
-Example Compose file:
-```
-version: '2'
-services:
-  m2em:
-    image: schemen/m2em:latest
-    environment:
-     - SMTPServer=mail.example.com
-     - EmailAddress=comic@example.com
-     - EmailAddressPw=verysecurepassword
-    volumes:
-     - <DATA_DIRECTORY>:/usr/src/app/data
-
-``` 
 
 ## Concept
 As a concept, M2em has different workers that run in a loop. All Chapter/user data is saved in a SQLite3 Database.
@@ -185,6 +179,8 @@ EbookFormat = MOBI
 # Ebook Profile setting, check 
 # https://github.com/ciromattia/kcc for more information
 EbookProfile = KV
+# If you want to run splash intependently change this setting
+SplashServer = http://splash:8050
 # Sender Email Server Settings
 SMTPServer = mail.example.com
 ServerPort = 587
