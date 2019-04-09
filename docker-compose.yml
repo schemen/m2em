@@ -1,0 +1,17 @@
+version: '2'
+services:
+  m2em:
+    image: schemen/m2em:latest
+    environment:
+     - SMTPServer=mail.example.com
+     - EmailAddress=comic@example.com
+     - EmailAddressPw=verysecurepassword
+    volumes:
+     - m2em:/usr/src/app/data
+
+  splash:
+    image: scrapinghub/splash
+    command: --max-timeout 3600
+
+volumes:
+  m2em:

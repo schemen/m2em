@@ -5,6 +5,7 @@ import re
 from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
+import bin.Config as Config
 
 '''
 
@@ -12,21 +13,24 @@ from bs4 import BeautifulSoup
 
 
 '''
-
+# Splash Rendering Service address
+config = Config.load_config()
+splash_server = config["SplashServer"]
 
 '''
 get Manga Title
 Returns: title
 '''
 def getTitle(page):
+    title = None
     soup = BeautifulSoup(page.content, 'html.parser')
 
     #Get Manga Titel
-    var = soup.findAll("h2")
-    step1 = ''.join(var[0].findAll(text=True))
-    step2 = step1.split()
-    step3 = step2[:-3]
-    title = ' '.join(step3)
+    search = re.search('content="Read\s(.*?)\smanga online,', str(soup))
+    try:
+        title = search.group(1)
+    except AttributeError:
+        logging.error("No Title Fount!")
 
     return title
 
@@ -56,7 +60,7 @@ def getPages(page):
     soup = BeautifulSoup(page.content, 'html.parser')
 
     #Get Manga Titel
-    search =re.search('var total_pages=(.*?);', str(soup))
+    search =re.search('var imagecount=(.*?);', str(soup))
     pages = search.group(1)
     return pages
 
@@ -108,11 +112,30 @@ Returns: urllist
 '''
 def getImageUrl(pageurl):
     # Download Page
-    page = requests.get(pageurl)
+
+    # Splash LUA script
+    script = """
+    splash.resource_timeout = 5
+    splash:add_cookie{"IsAdult", "1", "/", domain="fanfox.net"}
+    splash:on_request(function(request)
+        if string.find(request.url, "tenmanga.com") ~= nil then
+            request.abort()
+        end
+    end)
+    splash:go(args.url)
+    return splash:html()
+    """
+
+    logging.debug("Sending rendering request to Splash")
+    resp = requests.post(str(splash_server + "/run"), json={
+        'lua_source': script,
+        'url': pageurl
+    })
+    page = resp.content
 
     #Pass page to parser
-    soup = BeautifulSoup(page.content, 'html.parser')
-    var1 = soup.find(id='image')
+    var =re.search('style=\"cursor:pointer\" src=\"//(.*?)\"', str(page))
 
-    imageurl = var1['src']
+    logging.debug(var.group(1))
+    imageurl = "http://" + var.group(1)
     return imageurl

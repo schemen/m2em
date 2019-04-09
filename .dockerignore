@@ -11,3 +11,5 @@ kindlegen.exe
 venv
 main.db
 log/*
+docker-compose.yml
+Dockerfile
