@@ -155,6 +155,11 @@ optional arguments:
   --daemon              Run as daemon
   -d, --debug           Debug Mode
   -v, --version         show program's version number and exit
+  -f "filter_regex", --filter "filter_regex"
+                        Adds a filter(python regex format), to filter the
+                        title of any manga parsed. Example: "(?i)one-punch"
+  -fl, --filter-list    Lists all filters
+
 
 ```
 
