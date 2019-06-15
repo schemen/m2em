@@ -48,10 +48,10 @@ class M2em:
         # Check weather there are some database migrations
         mversion = helper.getMigrationVersion() + ".py"
         if self.config["DisableMigrations"] == "True":
-            logging.info("Migrations disabled! Current version: %s ", mversion)
+            logging.debug("Migrations disabled! Current version: %s ", mversion)
         else:
             if mversion in os.listdir(os.getcwd() + "/migrations"):
-                logging.info("No migrations required! Current version: %s ", mversion)
+                logging.debug("No migrations required! Current version: %s ", mversion)
             else:
                 migrator.migrate()
 
