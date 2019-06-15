@@ -2,6 +2,7 @@
 import logging
 import ssl
 import feedparser
+import re
 from bin.models.Manga import Manga
 from bin.Models import *
 
@@ -34,5 +35,17 @@ def RssParser():
 
             # No need to continue if it is already saved :)
             if not current_manga.duplicated.exists():
-                current_manga.print_manga()
-                current_manga.save()
+
+                # Check if any filters are set, continue as usual if not.
+                if Filter.select().exists():
+                    filters = Filter.select().execute()
+                    for filter_entry in filters.iterator():
+
+                        # Save manga that match the filter
+                        if re.search(filter_entry.filtervalue, current_manga.title):
+                            current_manga.save()
+                            current_manga.print_manga()
+                else:
+                    current_manga.save()
+                    current_manga.print_manga()
+
