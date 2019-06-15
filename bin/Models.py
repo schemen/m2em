@@ -37,6 +37,11 @@ class Feeds(ModelBase):
     feedid = AutoField()
     url = TextField()
 
+class Migratehistory(ModelBase):
+    id = AutoField()
+    name = CharField()
+    migrated_at = DateTimeField()
+
 def create_tables():
     db.connection()
     db.create_tables([User, Chapter, Feeds])

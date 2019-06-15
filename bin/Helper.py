@@ -408,6 +408,18 @@ def getUsers():
 
     return users
 
+'''
+Function that gets the current DB version for migrations
+Returns: $dbversion
+'''
+def getMigrationVersion():
+
+    # Make the query
+    db.connection()
+    version = Migratehistory.select().order_by(Migratehistory.id.desc()).get().name
+
+    return version
+
 
 
 '''
