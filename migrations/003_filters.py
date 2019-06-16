@@ -22,7 +22,7 @@ Some examples (model - class or model name)::
 """
 
 import datetime as dt
-from Models import *
+from bin.Models import *
 import peewee as pw
 from decimal import ROUND_HALF_EVEN
 

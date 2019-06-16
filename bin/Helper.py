@@ -455,7 +455,11 @@ def getMigrationVersion():
 
     # Make the query
     db.connection()
-    version = Migratehistory.select().order_by(Migratehistory.id.desc()).get().name
+
+    try:
+        version = Migratehistory.select().order_by(Migratehistory.id.desc()).get().name
+    except OperationalError as error:
+        version = ""
 
     return version
 
