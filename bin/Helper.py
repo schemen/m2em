@@ -578,6 +578,9 @@ def sanetizeName(name):
     if ":" in name:
         name = name.replace(":", "_")
         return name
+    elif "/" in name:
+        name = name.replace("/", "")
+        return name
     else:
         return name
 
