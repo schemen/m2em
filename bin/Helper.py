@@ -91,7 +91,46 @@ def printFeeds():
 
     logging.info(table.draw())
 
-    
+'''
+Function write a filter into the DB
+Returns: N/A
+'''
+def writeFilter(filter_value):
+
+    # Connect to DB
+    db.connection()
+
+    # Insert Data
+    feed = Filter.create(filtervalue=filter_value)
+    feed.save()
+    logging.info("Succesfully added \"%s\" to the List of Filters", (filter_value))
+
+    # Close connection
+    db.close()
+
+'''
+Function that gets filter data and display it nicely
+Returns: N/A
+'''
+def printFilters():
+
+    table = texttable.Texttable()
+    table.set_deco(texttable.Texttable.HEADER)
+    table.set_cols_dtype(['i',  # int
+                          't',])  # text
+    table.header(["ID", "FILTER"])
+
+    # Connect
+    db.connection()
+
+    for row in Filter.select():
+        table.add_row([row.filterid, row.filtervalue])
+
+    # Close connection
+    db.close()
+
+    logging.info(table.draw())
+
 '''
 Function that gets feed data and display it nicely
 Returns: N/A
@@ -408,6 +447,22 @@ def getUsers():
 
     return users
 
+'''
+Function that gets the current DB version for migrations
+Returns: $dbversion
+'''
+def getMigrationVersion():
+
+    # Make the query
+    db.connection()
+
+    try:
+        version = Migratehistory.select().order_by(Migratehistory.id.desc()).get().name
+    except OperationalError as error:
+        version = ""
+
+    return version
+
 
 
 '''
@@ -522,6 +577,9 @@ Function that returns sanetized folder name
 def sanetizeName(name):
     if ":" in name:
         name = name.replace(":", "_")
+        return name
+    elif "/" in name:
+        name = name.replace("/", "")
         return name
     else:
         return name

@@ -15,6 +15,7 @@ import bin.RssParser as mparser
 import bin.DownloaderHandler as mdownloader
 import bin.ConverterHandler as mconverter
 import bin.SenderHandler as msender
+import bin.Migrator as migrator
 
 class M2em:
     """ Main Class """
@@ -43,6 +44,16 @@ class M2em:
         if not os.path.isfile(self.config["Database"]):
             helper.createFolder(self.config["SaveLocation"])
             helper.createDB()
+
+        # Check weather there are some database migrations
+        mversion = helper.getMigrationVersion() + ".py"
+        if self.config["DisableMigrations"] == "True":
+            logging.debug("Migrations disabled! Current version: %s ", mversion)
+        else:
+            if mversion in os.listdir(os.getcwd() + "/migrations"):
+                logging.debug("No migrations required! Current version: %s ", mversion)
+            else:
+                migrator.migrate()
 
 
     def read_arguments(self):
@@ -97,6 +108,12 @@ class M2em:
                             action="store_true")
         parser.add_argument('-v', '--version',
                             action='version', version='%(prog)s ' + __version__)
+        parser.add_argument('-f', '--filter',
+                            help='Adds a filter(python regex format), to filter the title of any manga parsed. Example: "(?i)one-punch"',
+                            nargs=1, metavar='"filter_regex"')
+        parser.add_argument('-fl', '--filter-list',
+                            help='Lists all filters',
+                            action='store_true')
 
         self.args = parser.parse_args()
 
@@ -117,6 +134,8 @@ class M2em:
             and self.args.switch_send is None \
             and self.args.add_user is False \
             and self.args.list_manga is None \
+            and self.args.filter is None \
+            and self.args.filter_list is None \
             and not any([self.args.add_user,
                          self.args.create_db,
                          self.args.daemon,
@@ -144,6 +163,16 @@ class M2em:
         else:
             logging.error("You need to enter an URL!")
 
+    '''
+    Catch -f/--filter
+    '''
+    def add_filter(self):
+        if len(self.args.filter) > 0:
+            filter_value = self.args.filter[0]
+            logging.debug("Entered filter: %s", filter_value)
+            helper.writeFilter(filter_value)
+        else:
+            logging.error("You need to enter a filter value!")
 
     '''
     Catch -s/--switch-user
@@ -171,12 +200,16 @@ class M2em:
 
 
     '''
-    Catch --list-feeds
+    Catch -lf/--list-feeds
     '''
     def list_feeds(self):
         helper.printFeeds()
 
-
+    '''
+    Catch -fl/--filter-list
+    '''
+    def filter_list(self):
+        helper.printFilters()
     '''
     Catch -L/--list-chapters-all
     '''
@@ -363,6 +396,14 @@ class M2em:
 
         if self.args.process:
             self.process_chapter()
+            return
+
+        if self.args.filter:
+            self.add_filter()
+            return
+
+        if self.args.filter_list:
+            self.filter_list()
             return
 
         # Mainloop
